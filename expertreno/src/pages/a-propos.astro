@@ -1,0 +1,88 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import BookingButton from '../components/BookingButton.astro';
+import { site, marques } from '../data/site';
+
+const title = 'À propos | Expert Réno & Expert Travaux — 25 ans tous corps d’état';
+const description =
+  'Expert Réno & Expert Travaux : 25 ans d’expérience tous corps d’état à Toulouse. Notre parcours, notre approche et pourquoi nous confier votre rénovation.';
+
+// ✏️ Valeurs affichées : modifiez librement.
+const valeurs = [
+  { titre: 'Transparence', texte: 'Des devis clairs, des prix justes et aucune surprise en cours de chantier.' },
+  { titre: 'Exigence', texte: 'La qualité du travail bien fait, héritée de 25 ans sur le terrain.' },
+  { titre: 'Engagement', texte: 'Votre projet est suivi personnellement, jusqu’à votre entière satisfaction.' },
+];
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader
+    surtitre="À propos"
+    titre="25 ans de terrain au service de vos projets"
+    sousTitre="Du conseil à la réalisation, une même exigence : sécuriser votre rénovation et vous livrer un résultat à la hauteur."
+  />
+
+  <section class="bg-white">
+    <div class="mx-auto max-w-content px-5 py-16">
+      <div class="grid gap-12 lg:grid-cols-2 lg:items-center">
+        <div class="space-y-5 text-ardoise leading-relaxed">
+          <h2 class="font-serif text-2xl font-bold text-foret">Mon parcours</h2>
+          <p>
+            Pendant <strong>{site.experience}</strong>, j’ai travaillé sur le terrain dans
+            l’ensemble des corps d’état du bâtiment : du gros œuvre aux finitions, en passant par la
+            plomberie, l’électricité et la menuiserie. Cette expérience m’a appris une chose
+            essentielle : un chantier réussi tient à la <strong>préparation</strong> et à la
+            <strong>coordination</strong>.
+          </p>
+          <p>
+            J’ai créé <strong>{marques.reno.nom}</strong> pour mettre cette connaissance au service
+            des particuliers comme des professionnels : optimiser les devis, sélectionner les bonnes
+            entreprises et obtenir les aides auxquelles vous avez droit.
+          </p>
+          <p>
+            Avec <strong>{marques.travaux.nom}</strong>, mon entreprise générale de bâtiment, je vais
+            plus loin : je réalise et coordonne directement vos travaux, tous corps d’état, en tant
+            qu’<strong>interlocuteur unique</strong>.
+          </p>
+        </div>
+
+        <!-- 📷 PLACEHOLDER : photo de présentation (portrait ou chantier) -->
+        <div class="flex aspect-[4/5] items-center justify-center rounded-2xl border border-brume bg-brume text-sm text-ardoise">
+          Photo à insérer
+        </div>
+      </div>
+
+      <!-- Approche -->
+      <div class="mt-16 rounded-2xl bg-sable p-8 sm:p-12">
+        <h2 class="font-serif text-2xl font-bold text-foret">Mon approche</h2>
+        <p class="mt-4 max-w-3xl text-ardoise leading-relaxed">
+          Trop de chantiers dérapent par manque de pilotage : budgets dépassés, délais qui
+          s’allongent, litiges. Mon rôle est d’<strong>anticiper</strong> ces risques. Je définis un
+          cadre clair dès le départ — budget, planning, choix techniques — puis je veille à ce qu’il
+          soit respecté, du premier coup de crayon à la remise des clés.
+        </p>
+      </div>
+
+      <!-- Valeurs -->
+      <div class="mt-16 grid gap-6 sm:grid-cols-3">
+        {
+          valeurs.map((v) => (
+            <div class="rounded-2xl border border-brume p-6">
+              <h3 class="font-serif text-lg font-bold text-foret">{v.titre}</h3>
+              <p class="mt-2 text-sm text-ardoise">{v.texte}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-brume bg-sable">
+    <div class="mx-auto max-w-content px-5 py-14 text-center">
+      <h2 class="font-serif text-2xl font-bold text-foret sm:text-3xl">Faisons connaissance</h2>
+      <p class="mx-auto mt-3 max-w-xl text-ardoise">Un premier échange, sans engagement, pour parler de votre projet.</p>
+      <div class="mt-7 flex justify-center"><BookingButton label="Réserver un créneau" /></div>
+    </div>
+  </section>
+</BaseLayout>

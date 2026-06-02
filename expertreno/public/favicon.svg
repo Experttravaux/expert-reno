@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#EAF0E7"/>
+  <!-- Anneau façon « enso » (ouvert), inspiré du logo -->
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#2B2B2B" stroke-width="4.5"
+          stroke-linecap="round" stroke-dasharray="116 30" transform="rotate(125 32 32)"/>
+  <!-- Monogramme E (vert clair) + R (vert foncé) -->
+  <text x="17" y="42" font-family="Georgia, 'DejaVu Serif', serif" font-size="28" font-weight="700" fill="#5DA86A">E</text>
+  <text x="31" y="44" font-family="Georgia, 'DejaVu Serif', serif" font-size="30" font-weight="700" fill="#163D2A">R</text>
+</svg>

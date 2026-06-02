@@ -1,0 +1,185 @@
+---
+// Formulaire de contact.
+// Ordre de priorité pour l'envoi des demandes :
+//   1. Supabase (CRM)  → si PUBLIC_SUPABASE_URL + PUBLIC_SUPABASE_ANON_KEY définis
+//   2. PUBLIC_FORM_ENDPOINT (Formspree / Brevo / HubSpot…) sinon
+//   3. Message au visiteur si rien n'est configuré
+// Aucune clé secrète n'est présente : la clé "anon" Supabase est publique et
+// protégée par les règles RLS (voir supabase/schema.sql).
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
+---
+
+<form id="contact-form" class="space-y-5" novalidate>
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="prenom" class="mb-1.5 block text-sm font-medium text-encre">Prénom <span class="text-ocre-dark">*</span></label>
+      <input id="prenom" name="prenom" type="text" required autocomplete="given-name"
+        class="w-full rounded-lg border border-brume bg-white px-4 py-3 text-encre outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+    </div>
+    <div>
+      <label for="nom" class="mb-1.5 block text-sm font-medium text-encre">Nom <span class="text-ocre-dark">*</span></label>
+      <input id="nom" name="nom" type="text" required autocomplete="family-name"
+        class="w-full rounded-lg border border-brume bg-white px-4 py-3 text-encre outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+    </div>
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="email" class="mb-1.5 block text-sm font-medium text-encre">Email <span class="text-ocre-dark">*</span></label>
+      <input id="email" name="email" type="email" required autocomplete="email"
+        class="w-full rounded-lg border border-brume bg-white px-4 py-3 text-encre outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+    </div>
+    <div>
+      <label for="telephone" class="mb-1.5 block text-sm font-medium text-encre">Téléphone <span class="text-ocre-dark">*</span></label>
+      <input id="telephone" name="telephone" type="tel" required autocomplete="tel"
+        class="w-full rounded-lg border border-brume bg-white px-4 py-3 text-encre outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+    </div>
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="type_projet" class="mb-1.5 block text-sm font-medium text-encre">Type de projet <span class="text-ocre-dark">*</span></label>
+      <!-- ✏️ Pour modifier les choix, éditez les <option> ci-dessous -->
+      <select id="type_projet" name="type_projet" required
+        class="w-full rounded-lg border border-brume bg-white px-4 py-3 text-encre outline-none focus:border-foret focus:ring-2 focus:ring-foret/20">
+        <option value="">Choisissez…</option>
+        <option>Rénovation tous corps d’état</option>
+        <option>Assistance à maîtrise d’ouvrage</option>
+        <option>Optimisation de devis</option>
+        <option>Investissement locatif / colocation</option>
+        <option>Sinistre (assurance)</option>
+        <option>Copropriété (syndic)</option>
+        <option>Autre</option>
+      </select>
+    </div>
+    <div>
+      <label for="budget" class="mb-1.5 block text-sm font-medium text-encre">Budget estimé</label>
+      <select id="budget" name="budget"
+        class="w-full rounded-lg border border-brume bg-white px-4 py-3 text-encre outline-none focus:border-foret focus:ring-2 focus:ring-foret/20">
+        <option value="">Choisissez…</option>
+        <option>Moins de 20 000 €</option>
+        <option>20 000 € – 50 000 €</option>
+        <option>50 000 € – 100 000 €</option>
+        <option>Plus de 100 000 €</option>
+        <option>À définir</option>
+      </select>
+    </div>
+  </div>
+
+  <div>
+    <label for="message" class="mb-1.5 block text-sm font-medium text-encre">Votre message <span class="text-ocre-dark">*</span></label>
+    <textarea id="message" name="message" rows="5" required
+      class="w-full rounded-lg border border-brume bg-white px-4 py-3 text-encre outline-none focus:border-foret focus:ring-2 focus:ring-foret/20"></textarea>
+  </div>
+
+  <!-- Piège anti-spam (champ caché : les robots le remplissent, pas les humains) -->
+  <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+  <button type="submit"
+    class="inline-flex items-center justify-center rounded-full bg-foret px-7 py-3.5 font-semibold text-white transition-colors hover:bg-foret-light disabled:opacity-60">
+    Envoyer ma demande
+  </button>
+
+  <!-- Zone de message (succès / erreur), lue par les lecteurs d'écran -->
+  <p id="form-status" role="status" aria-live="polite" class="text-sm"></p>
+</form>
+
+<script define:vars={{ endpoint, supabaseUrl, supabaseKey }}>
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('form-status');
+  const bouton = form.querySelector('button[type="submit"]');
+
+  const setStatus = (message, ok) => {
+    status.textContent = message;
+    status.className = `text-sm ${ok ? 'text-green-700' : 'text-red-600'}`;
+  };
+
+  const emailValide = (valeur) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valeur);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    setStatus('', true);
+
+    // Anti-spam : si le champ caché est rempli, on ignore silencieusement.
+    if (form._gotcha.value) return;
+
+    // Validation côté client
+    const requis = ['prenom', 'nom', 'email', 'telephone', 'type_projet', 'message'];
+    for (const champ of requis) {
+      if (!form[champ].value.trim()) {
+        setStatus('Merci de remplir tous les champs obligatoires.', false);
+        form[champ].focus();
+        return;
+      }
+    }
+    if (!emailValide(form.email.value)) {
+      setStatus('Merci de saisir une adresse email valide.', false);
+      form.email.focus();
+      return;
+    }
+
+    // Si rien n'est configuré (ni Supabase, ni endpoint), on prévient le visiteur.
+    if (!supabaseUrl && !endpoint) {
+      setStatus(
+        "Le formulaire n'est pas encore relié à un service d'envoi. Contactez-nous par téléphone ou WhatsApp en attendant.",
+        false
+      );
+      return;
+    }
+
+    const donnees = Object.fromEntries(new FormData(form).entries());
+    delete donnees._gotcha;
+
+    bouton.disabled = true;
+    bouton.textContent = 'Envoi en cours…';
+    try {
+      let ok = false;
+      if (supabaseUrl && supabaseKey) {
+        // 1) Envoi vers le CRM Supabase (table « leads »)
+        const reponse = await fetch(`${supabaseUrl}/rest/v1/leads`, {
+          method: 'POST',
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({
+            prenom: donnees.prenom || '',
+            nom: donnees.nom || '',
+            email: donnees.email || '',
+            telephone: donnees.telephone || '',
+            type_projet: donnees.type_projet || '',
+            budget: donnees.budget || '',
+            message: donnees.message || '',
+            statut: 'nouveau',
+            source: 'site',
+          }),
+        });
+        ok = reponse.ok;
+      } else {
+        // 2) Sinon, envoi vers l'endpoint configuré (Formspree / Brevo / HubSpot…)
+        const reponse = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(donnees),
+        });
+        ok = reponse.ok;
+      }
+
+      if (ok) {
+        form.reset();
+        setStatus('Merci ! Votre demande a bien été envoyée. Nous vous recontactons rapidement.', true);
+      } else {
+        setStatus("Une erreur est survenue lors de l'envoi. Merci de réessayer ou de nous appeler.", false);
+      }
+    } catch (err) {
+      setStatus("Impossible d'envoyer le formulaire pour le moment. Merci de nous contacter par téléphone.", false);
+    } finally {
+      bouton.disabled = false;
+      bouton.textContent = 'Envoyer ma demande';
+    }
+  });
+</script>
