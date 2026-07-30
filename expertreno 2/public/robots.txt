@@ -1,0 +1,10 @@
+# Site indexable par défaut.
+User-agent: *
+Allow: /
+
+# Pages privées (CRM / administration / espace client) : non indexées.
+Disallow: /admin
+Disallow: /espace-client
+
+# Le sitemap est généré automatiquement au build par @astrojs/sitemap.
+Sitemap: https://www.expertreno.fr/sitemap-index.xml
