@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import BookingButton from '../../components/BookingButton.astro';
+
+const title = 'Travaux de copropriété pour syndics à Toulouse | Expert Travaux';
+const description =
+  'Expert Travaux, partenaire des syndics à Toulouse : ravalement, parties communes, mise aux normes et entretien des copropriétés. Interlocuteur unique, devis clairs.';
+
+// ✏️ Prestations affichées : modifiez librement cette liste.
+const prestations = [
+  'Rénovation et entretien des parties communes (halls, cages d’escalier, couloirs)',
+  'Ravalement de façade et travaux d’étanchéité',
+  'Mise aux normes (électricité, accessibilité, sécurité)',
+  'Réfection des toitures, sols et peintures collectives',
+  'Contrats d’entretien et interventions ponctuelles',
+];
+
+const atouts = [
+  { titre: 'Interlocuteur unique', texte: 'Un seul contact pour tous les corps d’état : moins de coordination pour le syndic.' },
+  { titre: 'Devis clairs', texte: 'Des chiffrages détaillés et lisibles, faciles à présenter en assemblée générale.' },
+  { titre: 'Respect des occupants', texte: 'Chantiers organisés pour limiter les nuisances pour les copropriétaires.' },
+  { titre: 'Suivi transparent', texte: 'Un reporting régulier pour le conseil syndical, du démarrage à la réception.' },
+];
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader
+    surtitre="Syndics & copropriétés"
+    titre="Le partenaire travaux de vos copropriétés"
+    sousTitre="Parties communes, ravalement, mise aux normes : un interlocuteur unique, des devis clairs pour l’assemblée générale et un suivi transparent pour le conseil syndical."
+  />
+
+  <section class="bg-white">
+    <div class="mx-auto max-w-content px-5 py-16">
+      <div class="grid gap-12 lg:grid-cols-2">
+        <div>
+          <h2 class="font-serif text-2xl font-bold text-foret">Nos interventions en copropriété</h2>
+          <ul class="mt-6 space-y-3">
+            {
+              prestations.map((p) => (
+                <li class="flex gap-3 text-encre">
+                  <span class="mt-1 text-ocre-dark">✓</span>
+                  <span>{p}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+        <div class="rounded-2xl bg-sable p-8">
+          <h2 class="font-serif text-2xl font-bold text-foret">Une relation de confiance</h2>
+          <p class="mt-4 text-ardoise">
+            Nous savons combien la gestion d’une copropriété demande de fiabilité. Avec
+            <strong>25 ans d’expérience tous corps d’état</strong>, nous offrons aux syndics un partenaire
+            réactif, des devis défendables en assemblée générale et des chantiers menés dans le respect
+            des occupants.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          atouts.map((a) => (
+            <div class="rounded-2xl border border-brume p-6">
+              <h3 class="font-serif text-lg font-bold text-foret">{a.titre}</h3>
+              <p class="mt-2 text-sm text-ardoise">{a.texte}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-brume bg-sable">
+    <div class="mx-auto max-w-content px-5 py-14 text-center">
+      <h2 class="font-serif text-2xl font-bold text-foret sm:text-3xl">Des travaux à planifier ?</h2>
+      <p class="mx-auto mt-3 max-w-xl text-ardoise">Demandez un devis clair pour votre prochaine assemblée générale.</p>
+      <div class="mt-7 flex justify-center"><BookingButton label="Demander un devis" /></div>
+    </div>
+  </section>
+</BaseLayout>
