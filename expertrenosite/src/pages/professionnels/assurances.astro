@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import BookingButton from '../../components/BookingButton.astro';
+
+const title = 'Travaux après sinistre pour assurances à Toulouse | Expert Travaux';
+const description =
+  'Expert Travaux réalise les travaux de remise en état après sinistre (dégât des eaux, incendie) pour les assurances à Toulouse et en France. Devis conformes, délais tenus.';
+
+// ✏️ Prestations affichées : modifiez librement cette liste.
+const prestations = [
+  'Travaux après dégât des eaux (recherche de fuite, assèchement, remise en état)',
+  'Remise en état après incendie ou catastrophe naturelle',
+  'Réfection des peintures, sols, plafonds et menuiseries',
+  'Reprise des réseaux (plomberie, électricité) endommagés',
+  'Devis détaillés conformes au rapport d’expertise',
+];
+
+const etapes = [
+  { num: '1', titre: 'Constat & chiffrage', texte: 'Visite sur site, état des lieux des dommages et devis détaillé conforme à l’expertise.' },
+  { num: '2', titre: 'Coordination', texte: 'Échange avec l’expert et l’assuré, validation du périmètre et planification des travaux.' },
+  { num: '3', titre: 'Réalisation', texte: 'Intervention de nos équipes tous corps d’état, dans les délais convenus.' },
+  { num: '4', titre: 'Réception', texte: 'Livraison, levée des réserves et documents conformes pour le dossier d’assurance.' },
+];
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader
+    surtitre="Assurances & sinistres"
+    titre="Vos travaux après sinistre, pris en charge de A à Z"
+    sousTitre="Un partenaire travaux fiable pour les compagnies d’assurance : devis conformes, coordination avec vos experts et remise en état dans les délais."
+  />
+
+  <section class="bg-white">
+    <div class="mx-auto max-w-content px-5 py-16">
+      <div class="grid gap-12 lg:grid-cols-2">
+        <div>
+          <h2 class="font-serif text-2xl font-bold text-foret">Ce que nous prenons en charge</h2>
+          <ul class="mt-6 space-y-3">
+            {
+              prestations.map((p) => (
+                <li class="flex gap-3 text-encre">
+                  <span class="mt-1 text-ocre-dark">✓</span>
+                  <span>{p}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+        <div class="rounded-2xl bg-sable p-8">
+          <h2 class="font-serif text-2xl font-bold text-foret">Pourquoi les assureurs nous choisissent</h2>
+          <p class="mt-4 text-ardoise">
+            Avec <strong>25 ans d’expérience tous corps d’état</strong>, nous parlons le langage des
+            experts et fournissons des devis clairs et conformes. Un seul interlocuteur pilote
+            l’ensemble de la remise en état, ce qui réduit les délais et simplifie le suivi du dossier.
+          </p>
+        </div>
+      </div>
+
+      <!-- Étapes -->
+      <div class="mt-16">
+        <h2 class="font-serif text-2xl font-bold text-foret">Notre processus</h2>
+        <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {
+            etapes.map((e) => (
+              <div class="rounded-2xl border border-brume p-6">
+                <span class="font-serif text-3xl font-bold text-ocre-dark">{e.num}</span>
+                <h3 class="mt-2 font-serif text-lg font-bold text-foret">{e.titre}</h3>
+                <p class="mt-2 text-sm text-ardoise">{e.texte}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-brume bg-sable">
+    <div class="mx-auto max-w-content px-5 py-14 text-center">
+      <h2 class="font-serif text-2xl font-bold text-foret sm:text-3xl">Un sinistre à traiter ?</h2>
+      <p class="mx-auto mt-3 max-w-xl text-ardoise">Contactez-nous pour un devis conforme et une intervention rapide.</p>
+      <div class="mt-7 flex justify-center"><BookingButton label="Demander un devis" /></div>
+    </div>
+  </section>
+</BaseLayout>

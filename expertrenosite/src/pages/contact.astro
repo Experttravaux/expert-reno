@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import ContactForm from '../components/ContactForm.astro';
+import BookingButton from '../components/BookingButton.astro';
+import { contact, reseaux, site } from '../data/site';
+
+const title = 'Contact | Expert Réno & Expert Travaux — Toulouse & France';
+const description =
+  'Contactez Expert Réno & Expert Travaux à Toulouse : devis, conseil ou prise de rendez-vous. Par formulaire, téléphone ou WhatsApp. Intervention à Toulouse, Bordeaux et en France.';
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader
+    surtitre="Contact"
+    titre="Parlons de votre projet"
+    sousTitre="Une question, un devis, un rendez-vous ? Écrivez-nous ou réservez directement un créneau."
+  />
+
+  <section class="bg-white">
+    <div class="mx-auto grid max-w-content gap-12 px-5 py-16 lg:grid-cols-5">
+      <!-- Formulaire -->
+      <div class="lg:col-span-3">
+        <h2 class="font-serif text-2xl font-bold text-foret">Demander un devis ou un conseil</h2>
+        <p class="mt-2 text-ardoise">Les champs marqués d’un <span class="text-ocre-dark">*</span> sont obligatoires.</p>
+        <div class="mt-8">
+          <ContactForm />
+        </div>
+      </div>
+
+      <!-- Coordonnées -->
+      <aside class="lg:col-span-2">
+        <div class="rounded-2xl bg-sable p-8">
+          <h2 class="font-serif text-xl font-bold text-foret">Coordonnées</h2>
+          <ul class="mt-5 space-y-4 text-sm">
+            <li>
+              <p class="font-semibold text-encre">Téléphone</p>
+              <a href={`tel:${contact.telephone}`} class="text-ardoise hover:text-ocre-dark">{contact.telephoneAffiche}</a>
+            </li>
+            <li>
+              <p class="font-semibold text-encre">Email</p>
+              <a href={`mailto:${contact.email}`} class="text-ardoise hover:text-ocre-dark">{contact.email}</a>
+            </li>
+            <li>
+              <p class="font-semibold text-encre">WhatsApp</p>
+              <a href={reseaux.whatsapp} target="_blank" rel="noopener noreferrer" class="text-ardoise hover:text-ocre-dark">Démarrer une conversation</a>
+            </li>
+            <li>
+              <p class="font-semibold text-encre">Zones d’intervention</p>
+              <p class="text-ardoise">{site.zones.join(' · ')}</p>
+            </li>
+          </ul>
+
+          <div class="mt-8 border-t border-brume pt-6">
+            <p class="font-semibold text-encre">Préférez un rendez-vous ?</p>
+            <p class="mt-1 text-sm text-ardoise">Choisissez un créneau qui vous convient.</p>
+            <div class="mt-4"><BookingButton label="Réserver un créneau" /></div>
+          </div>
+
+          <div class="mt-8 border-t border-brume pt-6">
+            <p class="font-semibold text-encre">Réseaux sociaux</p>
+            <div class="mt-3 flex flex-wrap gap-3 text-sm">
+              <a href={reseaux.instagram} target="_blank" rel="noopener noreferrer" class="text-ardoise hover:text-ocre-dark">Instagram</a>
+              <a href={reseaux.linkedin} target="_blank" rel="noopener noreferrer" class="text-ardoise hover:text-ocre-dark">LinkedIn</a>
+              <a href={reseaux.twitter} target="_blank" rel="noopener noreferrer" class="text-ardoise hover:text-ocre-dark">X (Twitter)</a>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>

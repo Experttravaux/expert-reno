@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import BookingButton from '../../components/BookingButton.astro';
+import { marques } from '../../data/site';
+import { getCollection } from 'astro:content';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.ordre - b.data.ordre);
+const servicesTravaux = services.filter((s) => s.data.marque === 'travaux');
+const servicesReno = services.filter((s) => s.data.marque === 'reno');
+
+const title = 'Nos services : rénovation tous corps d’état & maîtrise d’ouvrage | Toulouse';
+const description =
+  'Découvrez nos services à Toulouse : rénovation tous corps d’état, assistance à maîtrise d’ouvrage, optimisation de devis, plans, aides financières et packs fournitures.';
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader
+    surtitre="Nos services"
+    titre="Le conseil et la réalisation, réunis"
+    sousTitre="Du premier devis à la remise des clés, deux marques complémentaires pour mener votre projet en toute sérénité."
+  />
+
+  <!-- SERVICES EXPERT TRAVAUX -->
+  <section class="bg-white">
+    <div class="mx-auto max-w-content px-5 py-16">
+      <div class="mb-8">
+        <p class="text-sm font-semibold uppercase tracking-widest text-ocre-dark">{marques.travaux.nom}</p>
+        <h2 class="mt-2 font-serif text-3xl font-bold text-foret">{marques.travaux.role}</h2>
+      </div>
+      <div class="grid gap-6 sm:grid-cols-2">
+        {
+          servicesTravaux.map((s) => (
+            <ServiceCard titre={s.data.titre} resume={s.data.resume} marque={s.data.marque} lien={`/services/${s.slug}`} />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES EXPERT RÉNO -->
+  <section class="bg-sable">
+    <div class="mx-auto max-w-content px-5 py-16">
+      <div class="mb-8">
+        <p class="text-sm font-semibold uppercase tracking-widest text-ocre-dark">{marques.reno.nom}</p>
+        <h2 class="mt-2 font-serif text-3xl font-bold text-foret">{marques.reno.role}</h2>
+      </div>
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          servicesReno.map((s) => (
+            <ServiceCard titre={s.data.titre} resume={s.data.resume} marque={s.data.marque} lien={`/services/${s.slug}`} />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-brume bg-sable">
+    <div class="mx-auto max-w-content px-5 py-14 text-center">
+      <h2 class="font-serif text-2xl font-bold text-foret sm:text-3xl">Un projet en tête ?</h2>
+      <p class="mx-auto mt-3 max-w-xl text-ardoise">Réservez un échange gratuit, on vous oriente vers la bonne solution.</p>
+      <div class="mt-7 flex justify-center"><BookingButton label="Réserver un créneau" /></div>
+    </div>
+  </section>
+</BaseLayout>

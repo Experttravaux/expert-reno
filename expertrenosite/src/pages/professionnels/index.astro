@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import BookingButton from '../../components/BookingButton.astro';
+import { contact } from '../../data/site';
+
+const title = 'Professionnels : assurances & syndics | Expert Travaux Toulouse';
+const description =
+  'Expert Travaux accompagne assurances et syndics à Toulouse et en France : gestion de sinistres, travaux après dégât des eaux, rénovation de copropriétés. Interlocuteur unique.';
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader
+    surtitre="Espace professionnels"
+    titre="Le partenaire travaux des assurances et des syndics"
+    sousTitre="Un interlocuteur unique, des devis conformes et des délais tenus. Nous prenons en charge vos sinistres et vos travaux de copropriété, de l’expertise à la réception."
+  />
+
+  <section class="bg-white">
+    <div class="mx-auto max-w-content px-5 py-16">
+      <div class="grid gap-6 md:grid-cols-2">
+        <!-- Carte Assurances -->
+        <a href="/professionnels/assurances" class="group flex flex-col rounded-2xl border border-brume bg-sable p-8 shadow-card transition-transform hover:-translate-y-1">
+          <h2 class="font-serif text-2xl font-bold text-foret">Assurances & sinistres</h2>
+          <p class="mt-3 flex-1 text-ardoise">
+            Dégât des eaux, incendie, catastrophe naturelle : nous réalisons les travaux de
+            remise en état, en lien avec vos experts, avec des devis conformes au rapport d’expertise.
+          </p>
+          <span class="mt-5 inline-flex items-center gap-1 font-semibold text-ocre-dark">
+            En savoir plus <span class="transition-transform group-hover:translate-x-1">→</span>
+          </span>
+        </a>
+
+        <!-- Carte Syndics -->
+        <a href="/professionnels/syndics" class="group flex flex-col rounded-2xl border border-brume bg-sable p-8 shadow-card transition-transform hover:-translate-y-1">
+          <h2 class="font-serif text-2xl font-bold text-foret">Syndics & copropriétés</h2>
+          <p class="mt-3 flex-1 text-ardoise">
+            Parties communes, ravalement, mise aux normes, entretien : un partenaire fiable pour
+            vos copropriétés, avec un suivi clair pour le conseil syndical et les copropriétaires.
+          </p>
+          <span class="mt-5 inline-flex items-center gap-1 font-semibold text-ocre-dark">
+            En savoir plus <span class="transition-transform group-hover:translate-x-1">→</span>
+          </span>
+        </a>
+      </div>
+
+      <!-- Arguments transverses -->
+      <div class="mt-12 grid gap-6 sm:grid-cols-3">
+        <div class="rounded-2xl border border-brume p-6">
+          <h3 class="font-serif text-lg font-bold text-foret">Interlocuteur unique</h3>
+          <p class="mt-2 text-sm text-ardoise">Un seul contact pour tous les corps d’état, du chiffrage à la réception.</p>
+        </div>
+        <div class="rounded-2xl border border-brume p-6">
+          <h3 class="font-serif text-lg font-bold text-foret">Devis conformes</h3>
+          <p class="mt-2 text-sm text-ardoise">Des chiffrages détaillés et conformes, adaptés aux exigences des assureurs et des syndics.</p>
+        </div>
+        <div class="rounded-2xl border border-brume p-6">
+          <h3 class="font-serif text-lg font-bold text-foret">Réactivité terrain</h3>
+          <p class="mt-2 text-sm text-ardoise">25 ans de réseau d’artisans pour intervenir vite et bien à Toulouse et alentours.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-brume bg-sable">
+    <div class="mx-auto max-w-content px-5 py-14 text-center">
+      <h2 class="font-serif text-2xl font-bold text-foret sm:text-3xl">Travaillons ensemble</h2>
+      <p class="mx-auto mt-3 max-w-xl text-ardoise">Assureurs, syndics : contactez-nous pour devenir partenaire ou demander un devis.</p>
+      <div class="mt-7 flex flex-wrap justify-center gap-4">
+        <BookingButton label="Réserver un créneau" />
+        <a href={`tel:${contact.telephone}`} class="inline-flex items-center justify-center rounded-full border border-foret/30 px-7 py-3.5 font-semibold text-foret transition-colors hover:bg-foret/5">
+          {contact.telephoneAffiche}
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
