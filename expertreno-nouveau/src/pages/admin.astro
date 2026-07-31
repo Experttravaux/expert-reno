@@ -1,0 +1,388 @@
+---
+// ════════════════════════════════════════════════════════════════════
+//  Tableau de bord CRM — Expert Réno (page privée, non indexée)
+//
+//  • Connexion par email + mot de passe (Supabase Auth)
+//  • Liste des demandes reçues via le formulaire de contact
+//  • Pipeline : Nouveau → Contacté → Devis envoyé → Gagné / Perdu
+//  • Notes par demande, recherche et filtres
+//
+//  Sécurité : la lecture des données nécessite d'être connecté (règles RLS,
+//  voir supabase/schema.sql). La clé "anon" présente côté navigateur est
+//  publique et sans danger.
+// ════════════════════════════════════════════════════════════════════
+---
+
+<!doctype html>
+<html lang="fr" class="bg-brume">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>CRM — Expert Réno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="min-h-screen font-sans text-encre">
+    <!-- Barre supérieure -->
+    <header class="border-b border-brume bg-white">
+      <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
+        <div class="flex items-center gap-3">
+          <svg viewBox="0 0 64 64" class="h-9 w-9" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="#1A1815"></rect>
+            <circle cx="32" cy="32" r="23" fill="none" stroke="#B4894E" stroke-width="4.5"
+                    stroke-linecap="round" stroke-dasharray="116 30" transform="rotate(125 32 32)"></circle>
+            <text x="17" y="42" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#B4894E">E</text>
+            <text x="31" y="44" font-family="Georgia, serif" font-size="30" font-weight="700" fill="#F7F4EF">R</text>
+          </svg>
+          <div class="leading-tight">
+            <p class="font-serif text-lg font-bold text-foret">Expert Réno</p>
+            <p class="text-xs text-ardoise">Tableau de bord CRM</p>
+          </div>
+        </div>
+        <button id="logout" hidden
+          class="rounded-full border border-foret/30 px-4 py-1.5 text-sm font-semibold text-foret transition-colors hover:bg-foret/5">
+          Se déconnecter
+        </button>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-5 py-8">
+      <!-- Message si la base n'est pas configurée -->
+      <div id="config-missing" hidden class="rounded-2xl border border-amber-300 bg-amber-50 p-6 text-amber-900">
+        <p class="font-semibold">CRM non configuré</p>
+        <p class="mt-1 text-sm">
+          Renseignez <code>PUBLIC_SUPABASE_URL</code> et <code>PUBLIC_SUPABASE_ANON_KEY</code>
+          (fichier <code>.env</code>), puis redéployez. Voir le guide <code>CRM-SUPABASE.md</code>.
+        </p>
+      </div>
+
+      <!-- Écran de connexion -->
+      <section id="login" hidden class="mx-auto max-w-sm rounded-2xl border border-brume bg-white p-8 shadow-card">
+        <h1 class="font-serif text-2xl font-bold text-foret">Connexion</h1>
+        <p class="mt-1 text-sm text-ardoise">Accès réservé à l'administration.</p>
+        <form id="login-form" class="mt-6 space-y-4">
+          <div>
+            <label for="email" class="mb-1.5 block text-sm font-medium">Email</label>
+            <input id="email" type="email" required autocomplete="username"
+              class="w-full rounded-lg border border-brume px-4 py-3 outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+          </div>
+          <div>
+            <label for="password" class="mb-1.5 block text-sm font-medium">Mot de passe</label>
+            <input id="password" type="password" required autocomplete="current-password"
+              class="w-full rounded-lg border border-brume px-4 py-3 outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+          </div>
+          <button type="submit"
+            class="w-full rounded-full bg-foret px-7 py-3 font-semibold text-white transition-colors hover:bg-foret-light disabled:opacity-60">
+            Se connecter
+          </button>
+          <p id="login-error" role="alert" class="text-sm text-red-600"></p>
+        </form>
+      </section>
+
+      <!-- Application -->
+      <section id="app" hidden>
+        <!-- Statistiques (compteurs par statut) -->
+        <div id="stats" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6"></div>
+
+        <!-- Filtres -->
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div id="filters" class="flex flex-wrap gap-2"></div>
+          <input id="search" type="search" placeholder="Rechercher (nom, email, téléphone…)"
+            class="w-full rounded-full border border-brume px-5 py-2.5 text-sm outline-none focus:border-foret focus:ring-2 focus:ring-foret/20 sm:w-72" />
+        </div>
+
+        <!-- Tableau (desktop) -->
+        <div class="mt-5 overflow-hidden rounded-2xl border border-brume bg-white shadow-card">
+          <div class="hidden grid-cols-[110px_1fr_1fr_1fr_140px_90px] gap-px bg-brume text-xs font-semibold uppercase tracking-wide text-ardoise lg:grid">
+            <div class="bg-sable px-4 py-3">Date</div>
+            <div class="bg-sable px-4 py-3">Nom</div>
+            <div class="bg-sable px-4 py-3">Contact</div>
+            <div class="bg-sable px-4 py-3">Projet</div>
+            <div class="bg-sable px-4 py-3">Statut</div>
+            <div class="bg-sable px-4 py-3"></div>
+          </div>
+          <div id="rows"></div>
+          <p id="empty" hidden class="px-4 py-12 text-center text-ardoise">Aucune demande pour le moment.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Panneau détail (modale) -->
+    <div id="drawer" class="fixed inset-0 z-50 hidden justify-end bg-black/30">
+      <div class="h-full w-full max-w-md overflow-y-auto bg-white p-6 shadow-xl">
+        <div class="flex items-start justify-between">
+          <h2 id="d-name" class="font-serif text-xl font-bold text-foret"></h2>
+          <button id="d-close" class="text-2xl leading-none text-ardoise hover:text-encre">&times;</button>
+        </div>
+        <dl id="d-fields" class="mt-4 space-y-3 text-sm"></dl>
+        <label class="mt-5 block text-sm font-medium">Notes internes</label>
+        <textarea id="d-notes" rows="5"
+          class="mt-1.5 w-full rounded-lg border border-brume px-4 py-3 text-sm outline-none focus:border-foret focus:ring-2 focus:ring-foret/20"></textarea>
+        <div class="mt-4 flex items-center justify-between">
+          <button id="d-save"
+            class="rounded-full bg-foret px-6 py-2.5 text-sm font-semibold text-white hover:bg-foret-light">Enregistrer</button>
+          <button id="d-delete"
+            class="rounded-full border border-red-300 px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">Supprimer</button>
+        </div>
+        <p id="d-status" class="mt-3 text-sm"></p>
+      </div>
+    </div>
+
+    <script>
+      import { createClient } from '@supabase/supabase-js';
+
+      const URL = import.meta.env.PUBLIC_SUPABASE_URL;
+      const KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+      const STATUTS = [
+        { v: 'nouveau', label: 'Nouveau', cls: 'bg-blue-100 text-blue-800' },
+        { v: 'contacte', label: 'Contacté', cls: 'bg-amber-100 text-amber-800' },
+        { v: 'devis_envoye', label: 'Devis envoyé', cls: 'bg-purple-100 text-purple-800' },
+        { v: 'gagne', label: 'Gagné', cls: 'bg-green-100 text-green-800' },
+        { v: 'perdu', label: 'Perdu', cls: 'bg-red-100 text-red-700' },
+      ];
+      const labelOf = (v) => (STATUTS.find((s) => s.v === v) || { label: v }).label;
+      const clsOf = (v) => (STATUTS.find((s) => s.v === v) || { cls: 'bg-gray-100 text-gray-700' }).cls;
+
+      const $ = (id) => document.getElementById(id);
+      const esc = (v) =>
+        String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const fmtDate = (iso) =>
+        new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+
+      // État de l'interface
+      let leads = [];
+      let filtreStatut = 'tous';
+      let recherche = '';
+      let courant = null; // lead ouvert dans le panneau
+
+      if (!URL || !KEY) {
+        $('config-missing').hidden = false;
+      } else {
+        const supabase = createClient(URL, KEY);
+        initApp(supabase);
+      }
+
+      async function initApp(supabase) {
+        // Affiche login ou application selon la session
+        const { data: { session } } = await supabase.auth.getSession();
+        session ? showApp(supabase) : showLogin();
+
+        // Connexion
+        $('login-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          $('login-error').textContent = '';
+          const btn = e.target.querySelector('button');
+          btn.disabled = true;
+          const { error } = await supabase.auth.signInWithPassword({
+            email: $('email').value.trim(),
+            password: $('password').value,
+          });
+          btn.disabled = false;
+          if (error) {
+            $('login-error').textContent = 'Email ou mot de passe incorrect.';
+          } else {
+            showApp(supabase);
+          }
+        });
+
+        // Déconnexion
+        $('logout').addEventListener('click', async () => {
+          await supabase.auth.signOut();
+          location.reload();
+        });
+
+        // Recherche
+        $('search').addEventListener('input', (e) => {
+          recherche = e.target.value.toLowerCase();
+          renderRows();
+        });
+
+        // Panneau détail : fermeture / sauvegarde / suppression
+        $('d-close').addEventListener('click', closeDrawer);
+        $('drawer').addEventListener('click', (e) => {
+          if (e.target === $('drawer')) closeDrawer();
+        });
+        $('d-save').addEventListener('click', () => saveNotes(supabase));
+        $('d-delete').addEventListener('click', () => deleteLead(supabase));
+      }
+
+      function showLogin() {
+        $('login').hidden = false;
+        $('app').hidden = true;
+        $('logout').hidden = true;
+      }
+
+      async function showApp(supabase) {
+        $('login').hidden = true;
+        $('app').hidden = false;
+        $('logout').hidden = false;
+        renderFilters();
+        await loadLeads(supabase);
+      }
+
+      async function loadLeads(supabase) {
+        const { data, error } = await supabase
+          .from('leads')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) {
+          console.error(error);
+          $('empty').hidden = false;
+          $('empty').textContent = 'Erreur de chargement. Vérifiez la configuration de la base.';
+          return;
+        }
+        leads = data || [];
+        renderStats();
+        renderRows();
+        // Mise à jour du statut directement depuis la liste (délégation d'événement)
+        $('rows').addEventListener('change', async (e) => {
+          if (e.target.matches('select[data-id]')) {
+            const id = e.target.getAttribute('data-id');
+            await supabase.from('leads').update({ statut: e.target.value }).eq('id', id);
+            const l = leads.find((x) => x.id === id);
+            if (l) l.statut = e.target.value;
+            renderStats();
+          }
+        });
+      }
+
+      function renderStats() {
+        const total = leads.length;
+        const chips = [{ v: 'tous', label: 'Total', cls: 'bg-foret/10 text-foret' }, ...STATUTS];
+        $('stats').innerHTML = chips
+          .map((s) => {
+            const n = s.v === 'tous' ? total : leads.filter((l) => l.statut === s.v).length;
+            return `<div class="rounded-xl border border-brume bg-white p-4">
+              <p class="text-2xl font-bold text-foret">${n}</p>
+              <p class="mt-0.5 text-xs font-medium text-ardoise">${s.label}</p>
+            </div>`;
+          })
+          .join('');
+      }
+
+      function renderFilters() {
+        const chips = [{ v: 'tous', label: 'Toutes' }, ...STATUTS];
+        $('filters').innerHTML = chips
+          .map(
+            (s) =>
+              `<button data-f="${s.v}" class="filtre rounded-full px-4 py-1.5 text-sm font-medium transition-colors">${s.label}</button>`
+          )
+          .join('');
+        $('filters').querySelectorAll('.filtre').forEach((b) => {
+          b.addEventListener('click', () => {
+            filtreStatut = b.getAttribute('data-f');
+            renderFilters();
+            renderRows();
+          });
+        });
+        $('filters').querySelectorAll('.filtre').forEach((b) => {
+          const actif = b.getAttribute('data-f') === filtreStatut;
+          b.className =
+            'filtre rounded-full px-4 py-1.5 text-sm font-medium transition-colors ' +
+            (actif ? 'bg-foret text-white' : 'bg-white border border-brume text-ardoise hover:text-foret');
+        });
+      }
+
+      function filtered() {
+        return leads.filter((l) => {
+          if (filtreStatut !== 'tous' && l.statut !== filtreStatut) return false;
+          if (!recherche) return true;
+          const blob = `${l.prenom} ${l.nom} ${l.email} ${l.telephone} ${l.type_projet} ${l.message}`.toLowerCase();
+          return blob.includes(recherche);
+        });
+      }
+
+      function renderRows() {
+        const list = filtered();
+        $('empty').hidden = list.length > 0;
+        $('rows').innerHTML = list
+          .map((l) => {
+            const nom = esc([l.prenom, l.nom].filter(Boolean).join(' ') || '(sans nom)');
+            const select = `<select data-id="${l.id}" class="rounded-lg border border-brume px-2 py-1.5 text-xs font-medium ${clsOf(
+              l.statut
+            )}">${STATUTS.map(
+              (s) => `<option value="${s.v}" ${s.v === l.statut ? 'selected' : ''}>${s.label}</option>`
+            ).join('')}</select>`;
+            return `<div class="grid grid-cols-1 gap-1 border-t border-brume px-4 py-3 text-sm lg:grid-cols-[110px_1fr_1fr_1fr_140px_90px] lg:items-center lg:gap-px">
+              <div class="text-ardoise">${fmtDate(l.created_at)}</div>
+              <div class="font-semibold text-encre">${nom}</div>
+              <div class="text-ardoise"><a class="hover:text-foret" href="mailto:${esc(l.email)}">${esc(l.email)}</a><br><a class="hover:text-foret" href="tel:${esc(l.telephone)}">${esc(l.telephone)}</a></div>
+              <div class="text-ardoise">${esc(l.type_projet)}${l.budget ? ` · ${esc(l.budget)}` : ''}</div>
+              <div>${select}</div>
+              <div class="lg:text-right"><button data-open="${l.id}" class="rounded-full border border-foret/30 px-3 py-1 text-xs font-semibold text-foret hover:bg-foret/5">Voir</button></div>
+            </div>`;
+          })
+          .join('');
+        $('rows').querySelectorAll('button[data-open]').forEach((b) => {
+          b.addEventListener('click', () => openDrawer(b.getAttribute('data-open')));
+        });
+      }
+
+      function openDrawer(id) {
+        courant = leads.find((l) => l.id === id);
+        if (!courant) return;
+        $('d-name').textContent = [courant.prenom, courant.nom].filter(Boolean).join(' ') || '(sans nom)';
+        $('d-fields').innerHTML = `
+          ${field('Reçu le', new Date(courant.created_at).toLocaleString('fr-FR'))}
+          ${field('Email', `<a class="text-foret hover:underline" href="mailto:${esc(courant.email)}">${esc(courant.email)}</a>`)}
+          ${field('Téléphone', `<a class="text-foret hover:underline" href="tel:${esc(courant.telephone)}">${esc(courant.telephone)}</a>`)}
+          ${field('Type de projet', esc(courant.type_projet))}
+          ${field('Budget', esc(courant.budget))}
+          ${field('Statut', `<span class="rounded-full px-2 py-0.5 text-xs font-medium ${clsOf(courant.statut)}">${labelOf(courant.statut)}</span>`)}
+          ${field('Message', esc(courant.message).replace(/\n/g, '<br>'))}
+        `;
+        $('d-notes').value = courant.notes || '';
+        $('d-status').textContent = '';
+        $('drawer').classList.remove('hidden');
+        $('drawer').classList.add('flex');
+      }
+
+      function field(k, v) {
+        return `<div><dt class="text-xs font-semibold uppercase tracking-wide text-ardoise">${k}</dt><dd class="mt-0.5 text-encre">${v || '—'}</dd></div>`;
+      }
+
+      function closeDrawer() {
+        $('drawer').classList.add('hidden');
+        $('drawer').classList.remove('flex');
+        courant = null;
+      }
+
+      async function saveNotes(supabase) {
+        if (!courant) return;
+        $('d-save').disabled = true;
+        const { error } = await supabase.from('leads').update({ notes: $('d-notes').value }).eq('id', courant.id);
+        $('d-save').disabled = false;
+        if (error) {
+          $('d-status').className = 'mt-3 text-sm text-red-600';
+          $('d-status').textContent = "Erreur lors de l'enregistrement.";
+        } else {
+          courant.notes = $('d-notes').value;
+          $('d-status').className = 'mt-3 text-sm text-green-700';
+          $('d-status').textContent = 'Notes enregistrées ✓';
+        }
+      }
+
+      async function deleteLead(supabase) {
+        if (!courant) return;
+        if (!confirm('Supprimer définitivement cette demande ?')) return;
+        const { error } = await supabase.from('leads').delete().eq('id', courant.id);
+        if (error) {
+          $('d-status').className = 'mt-3 text-sm text-red-600';
+          $('d-status').textContent = 'Erreur lors de la suppression.';
+          return;
+        }
+        leads = leads.filter((l) => l.id !== courant.id);
+        closeDrawer();
+        renderStats();
+        renderRows();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+---
+// ════════════════════════════════════════════════════════════════════
+//  LEAD MAGNET — Estimateur « Combien coûte la réno de votre salle de bain ? »
+//
+//  • Quiz ludique en 3 étapes → estimation de prix instantanée
+//  • Formulaire de captation → enregistré dans le CRM (table leads),
+//    source = "estimateur-salle-de-bain"
+//  • Pensé mobile-first (trafic réseaux sociaux)
+// ════════════════════════════════════════════════════════════════════
+---
+
+<!doctype html>
+<html lang="fr" class="bg-sable">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Combien coûte la rénovation de votre salle de bain ? — Expert Réno</title>
+    <meta name="description" content="Estimez gratuitement le prix de la rénovation de votre salle de bain en 30 secondes, puis recevez un devis personnalisé d'Expert Réno." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="min-h-screen font-sans text-encre">
+    <header class="border-b border-brume bg-white">
+      <div class="mx-auto flex h-16 max-w-2xl items-center justify-between px-5">
+        <a href="/" class="flex items-center gap-2.5">
+          <svg viewBox="0 0 64 64" class="h-9 w-9" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="#1A1815"></rect>
+            <circle cx="32" cy="32" r="23" fill="none" stroke="#B4894E" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="116 30" transform="rotate(125 32 32)"></circle>
+            <text x="17" y="42" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#B4894E">E</text>
+            <text x="31" y="44" font-family="Georgia, serif" font-size="30" font-weight="700" fill="#F7F4EF">R</text>
+          </svg>
+          <span class="font-serif text-lg font-bold text-foret">Expert Réno</span>
+        </a>
+        <span class="text-xs font-semibold uppercase tracking-widest text-ocre-dark">Estimation gratuite</span>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-2xl px-5 py-10">
+      <div class="text-center">
+        <p class="text-sm font-semibold uppercase tracking-widest text-ocre-dark">Estimateur de prix · 30 secondes</p>
+        <h1 class="mt-2 font-serif text-3xl font-bold leading-tight text-foret sm:text-4xl">
+          Combien coûte la rénovation<br />de votre salle de bain ?
+        </h1>
+        <p class="mt-3 text-ardoise">3 questions, une estimation immédiate. Sans engagement.</p>
+      </div>
+
+      <!-- Progression -->
+      <div id="progress" class="mx-auto mt-8 flex max-w-xs items-center justify-center gap-2">
+        <span class="dot h-2 w-10 rounded-full bg-ocre transition-colors"></span>
+        <span class="dot h-2 w-10 rounded-full bg-brume transition-colors"></span>
+        <span class="dot h-2 w-10 rounded-full bg-brume transition-colors"></span>
+      </div>
+
+      <div class="mt-8 rounded-3xl border border-brume bg-white p-6 shadow-card sm:p-8">
+        <!-- Étape 1 : surface -->
+        <section class="step" data-step="0">
+          <h2 class="font-serif text-xl font-bold text-foret">Quelle est la taille de votre salle de bain ?</h2>
+          <div class="mt-5 grid gap-3" data-q="surface">
+            <button class="opt" data-val="petite" data-m2="3.5">🚿 Petite <span class="text-ardoise">(moins de 4 m²)</span></button>
+            <button class="opt" data-val="moyenne" data-m2="5.5">🛁 Moyenne <span class="text-ardoise">(4 à 7 m²)</span></button>
+            <button class="opt" data-val="grande" data-m2="9">🛁✨ Grande <span class="text-ardoise">(plus de 7 m²)</span></button>
+          </div>
+        </section>
+
+        <!-- Étape 2 : type de travaux -->
+        <section class="step hidden" data-step="1">
+          <h2 class="font-serif text-xl font-bold text-foret">Quel type de travaux ?</h2>
+          <div class="mt-5 grid gap-3" data-q="travaux">
+            <button class="opt" data-val="rafraichissement" data-min="350" data-max="600">🎨 Rafraîchissement <span class="text-ardoise">(peinture, faïence, meuble)</span></button>
+            <button class="opt" data-val="complete" data-min="850" data-max="1400">🔧 Rénovation complète <span class="text-ardoise">(tout refait à neuf)</span></button>
+            <button class="opt" data-val="creation" data-min="1200" data-max="1900">🏗️ Création <span class="text-ardoise">(nouvelle salle de bain)</span></button>
+          </div>
+        </section>
+
+        <!-- Étape 3 : niveau de gamme -->
+        <section class="step hidden" data-step="2">
+          <h2 class="font-serif text-xl font-bold text-foret">Quel niveau de finition ?</h2>
+          <div class="mt-5 grid gap-3" data-q="gamme">
+            <button class="opt" data-val="essentiel" data-mult="0.85">💧 Essentiel <span class="text-ardoise">(bon rapport qualité-prix)</span></button>
+            <button class="opt" data-val="confort" data-mult="1">⭐ Confort <span class="text-ardoise">(équipements de qualité)</span></button>
+            <button class="opt" data-val="premium" data-mult="1.4">💎 Premium <span class="text-ardoise">(matériaux haut de gamme)</span></button>
+          </div>
+        </section>
+
+        <!-- Résultat + captation -->
+        <section class="step hidden" data-step="3">
+          <div class="rounded-2xl bg-foret p-6 text-center text-white">
+            <p class="text-sm uppercase tracking-widest text-ocre">Votre estimation</p>
+            <p id="result-range" class="mt-2 font-serif text-3xl font-bold text-white sm:text-4xl">—</p>
+            <p class="mt-1 text-sm text-white/70">Fourchette indicative, hors surprises de chantier.</p>
+          </div>
+          <div class="mt-6">
+            <h2 class="font-serif text-xl font-bold text-foret">Recevez votre devis précis et gratuit</h2>
+            <p class="mt-1 text-sm text-ardoise">Un expert vous rappelle sous 24 h avec un chiffrage détaillé, sans engagement.</p>
+            <form id="lead-form" class="mt-4 space-y-3">
+              <div class="grid gap-3 sm:grid-cols-2">
+                <input name="prenom" required placeholder="Prénom" class="w-full rounded-lg border border-brume px-4 py-3 outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+                <input name="nom" placeholder="Nom" class="w-full rounded-lg border border-brume px-4 py-3 outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+              </div>
+              <input name="telephone" type="tel" required placeholder="Téléphone" class="w-full rounded-lg border border-brume px-4 py-3 outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+              <input name="email" type="email" required placeholder="Email" class="w-full rounded-lg border border-brume px-4 py-3 outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+              <input name="code_postal" placeholder="Code postal (facultatif)" class="w-full rounded-lg border border-brume px-4 py-3 outline-none focus:border-foret focus:ring-2 focus:ring-foret/20" />
+              <button type="submit" class="w-full rounded-full bg-ocre px-7 py-3.5 font-semibold text-foret transition-colors hover:bg-ocre-light disabled:opacity-60">
+                Recevoir mon devis gratuit →
+              </button>
+              <p id="form-error" role="alert" class="text-center text-sm text-red-600"></p>
+              <p class="text-center text-xs text-ardoise">🔒 Vos données restent confidentielles. Aucun démarchage abusif.</p>
+            </form>
+          </div>
+        </section>
+
+        <!-- Merci -->
+        <section class="step hidden text-center" data-step="4">
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-ocre/15 text-3xl">✅</div>
+          <h2 class="mt-4 font-serif text-2xl font-bold text-foret">Merci, c'est enregistré !</h2>
+          <p class="mt-2 text-ardoise">Un expert Expert Réno vous rappelle <strong>sous 24 h</strong> avec votre devis détaillé.</p>
+          <p class="mt-1 text-sm text-ardoise">Rappel de votre estimation : <span id="result-recap" class="font-semibold text-foret"></span></p>
+          <a href="/" class="mt-6 inline-flex rounded-full border border-foret/30 px-6 py-3 font-semibold text-foret hover:bg-foret/5">Retour au site</a>
+        </section>
+
+        <!-- Retour -->
+        <button id="back" class="mt-6 hidden text-sm font-medium text-ardoise hover:text-foret">← Question précédente</button>
+      </div>
+
+      <div id="config-missing" hidden class="mx-auto mt-4 max-w-xl rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+        ⚠️ Formulaire non connecté : renseignez <code>PUBLIC_SUPABASE_URL</code> / <code>PUBLIC_SUPABASE_ANON_KEY</code> et exécutez <code>supabase/schema.sql</code>.
+      </div>
+    </main>
+
+    <style>
+      .opt { text-align:left; border:1px solid #ECE7DF; border-radius:0.9rem; padding:1rem 1.15rem; font-weight:600; color:#17150F; transition:all .15s; }
+      .opt:hover { border-color:#B4894E; background:#FBF8F3; transform:translateY(-1px); }
+      .opt.sel { border-color:#1A1815; background:#1A1815; color:#F7F4EF; }
+      .opt.sel .text-ardoise { color:#B4894E; }
+    </style>
+
+    <script>
+      import { createClient } from '@supabase/supabase-js';
+      const URL = import.meta.env.PUBLIC_SUPABASE_URL;
+      const KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+      const supabase = (URL && KEY) ? createClient(URL, KEY) : null;
+      if (!supabase) document.getElementById('config-missing').hidden = false;
+
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => Array.from(document.querySelectorAll(s));
+      const fmt = (n) => Math.round(n / 500) * 500;
+      const euro = (n) => n.toLocaleString('fr-FR') + ' €';
+
+      const answers = { surface: null, travaux: null, gamme: null };
+      let step = 0;
+
+      function show(n) {
+        step = n;
+        $$('.step').forEach((s) => s.classList.toggle('hidden', Number(s.dataset.step) !== n));
+        $$('#progress .dot').forEach((d, i) => d.classList.toggle('bg-ocre', i <= Math.min(n, 2)) || d.classList.toggle('bg-brume', i > Math.min(n, 2)));
+        $('#back').classList.toggle('hidden', n === 0 || n >= 4);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function computeEstimate() {
+        const m2 = Number(answers.surface.m2);
+        const min = Number(answers.travaux.min), max = Number(answers.travaux.max);
+        const mult = Number(answers.gamme.mult);
+        let lo = fmt(m2 * min * mult), hi = fmt(m2 * max * mult);
+        lo = Math.max(lo, 1000);
+        return { lo, hi, text: euro(lo) + ' – ' + euro(hi) };
+      }
+
+      // Sélection d'une option → enregistre et avance
+      $$('.opt').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const q = btn.closest('[data-q]').dataset.q;
+          btn.closest('[data-q]').querySelectorAll('.opt').forEach((b) => b.classList.remove('sel'));
+          btn.classList.add('sel');
+          answers[q] = { ...btn.dataset };
+          setTimeout(() => {
+            if (q === 'surface') show(1);
+            else if (q === 'travaux') show(2);
+            else if (q === 'gamme') {
+              const est = computeEstimate();
+              $('#result-range').textContent = est.text;
+              $('#result-recap').textContent = est.text;
+              window.__est = est;
+              show(3);
+            }
+          }, 180);
+        });
+      });
+
+      $('#back').addEventListener('click', () => show(Math.max(0, step - 1)));
+
+      // Envoi du formulaire → CRM
+      $('#lead-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        $('#form-error').textContent = '';
+        const btn = e.target.querySelector('button[type=submit]');
+        const f = e.target;
+        if (!supabase) { $('#form-error').textContent = 'Formulaire non connecté (configuration manquante).'; return; }
+        btn.disabled = true; btn.textContent = 'Envoi…';
+        const est = window.__est || {};
+        const labels = { petite: 'Petite (<4m²)', moyenne: 'Moyenne (4-7m²)', grande: 'Grande (>7m²)',
+          rafraichissement: 'Rafraîchissement', complete: 'Rénovation complète', creation: 'Création',
+          essentiel: 'Essentiel', confort: 'Confort', premium: 'Premium' };
+        const { error } = await supabase.from('leads').insert({
+          prenom: f.prenom.value.trim(), nom: f.nom.value.trim(),
+          email: f.email.value.trim(), telephone: f.telephone.value.trim(),
+          type_projet: 'Rénovation salle de bain',
+          budget: est.text || '',
+          message: `Estimateur salle de bain — Surface : ${labels[answers.surface?.val]}, Travaux : ${labels[answers.travaux?.val]}, Gamme : ${labels[answers.gamme?.val]}. Estimation : ${est.text || 'n/a'}.`,
+          source: 'estimateur-salle-de-bain',
+          data: { outil: 'salle-de-bain', reponses: answers, estimation: est, code_postal: f.code_postal.value.trim() },
+        });
+        btn.disabled = false; btn.textContent = 'Recevoir mon devis gratuit →';
+        if (error) { $('#form-error').textContent = "Une erreur est survenue. Réessayez ou appelez-nous."; console.error(error); return; }
+        show(4);
+      });
+    </script>
+  </body>
+</html>

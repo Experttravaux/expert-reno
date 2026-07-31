@@ -1,0 +1,44 @@
+---
+// Balises SEO uniques par page (title, description, Open Graph, Twitter Card).
+// Aucune balise noindex : le site est indexable par défaut.
+import { site } from '../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string; // chemin de l'image de partage, ex. /images/og-expertreno.jpg
+  noindex?: boolean; // true = page privée non référencée (ex. tableau de bord admin)
+}
+
+const { title, description, image = '/images/og-expertreno.jpg', noindex = false } = Astro.props;
+
+// URL canonique et URL absolue de l'image (basées sur "site" défini dans astro.config.mjs)
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const imageURL = new URL(image, Astro.site);
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+{
+  noindex ? (
+    <meta name="robots" content="noindex, nofollow" />
+  ) : (
+    <meta name="robots" content="index, follow" />
+  )
+}
+
+<!-- Open Graph (Facebook, LinkedIn, WhatsApp…) -->
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="fr_FR" />
+<meta property="og:site_name" content={site.nom} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:image" content={imageURL} />
+
+<!-- Twitter / X Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageURL} />
