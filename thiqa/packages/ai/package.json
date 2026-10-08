@@ -1,0 +1,10 @@
+{
+  "name": "@thiqa/ai",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Versioned prompts and report pipeline — Phase 3.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

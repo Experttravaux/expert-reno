@@ -1,0 +1,25 @@
+{
+  "name": "@thiqa/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./state-machine": "./src/state-machine.ts",
+    "./checklist": "./src/checklist/index.ts",
+    "./scoring": "./src/scoring/index.ts",
+    "./pricing": "./src/pricing.ts"
+  },
+  "scripts": {
+    "lint": "eslint src test",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.11",
+    "vitest": "^4.1.11"
+  }
+}

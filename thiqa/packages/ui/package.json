@@ -1,0 +1,10 @@
+{
+  "name": "@thiqa/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared shadcn/ui components — Phase 1.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@thiqa/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "seed:gen": "tsx scripts/gen-seed.ts",
+    "types:gen": "supabase gen types typescript --local --schema public > src/database.types.ts",
+    "test": "vitest run",
+    "test:sql": "./scripts/test-sql.sh",
+    "test:bare": "./scripts/bare-postgres.sh",
+    "lint": "eslint scripts src test",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@thiqa/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.23.15",
+    "vitest": "^4.1.11"
+  }
+}
