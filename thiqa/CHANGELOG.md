@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0] — 2026-10-10 — « Comment le régler », solutions, marketplace, partenaires
+
+### Ajouté
+
+- `@thiqa/core/marketplace` : voie de résolution par point (`diy` / `pro` / `legal`, jamais `diy` sur un point rédhibitoire), score artisan /100 (satisfaction 35, réactivité 20, justesse des devis 20, fiabilité 15, documents 10), badges, suspensions automatiques, conseils « pour monter », classement des artisans pour les demandes de devis. Couverture 100 %.
+- Migration `20261010000100_marketplace.sql` : `solutions`, champs de résolution sur `inspection_items`, `partner_accounts` (artisan, technicien, marque, apporteur), `artisans`, `artisan_score_history`, `quote_requests`, `quotes`, `jobs`, `disputes`, `marketplace_rules`, `referral_rules`, `referrals`, `partner_products`, `placements`, `placement_events`, vues `artisan_requests` (sans adresse ni contact avant choix) et `public_artisans`. RLS partout.
+- Seed : 10 fiches « solutions pratiques » (non publiées, à relire), modèle commission 8 %, commission apporteur 10 %.
+- Tests SQL `05_marketplace.sql`, dont la règle d'or : aucun lien en base entre contenus sponsorisés et résultats d'inspection.
+
 ## [0.1.0] — 2026-10-08 — Phase 0 : fondations
 
 ### Ajouté
