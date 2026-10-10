@@ -3,6 +3,7 @@
 
 import { z } from 'zod';
 import { PROPERTY_TYPES, PURPOSES, SEVERITIES } from '../domain';
+import { RESOLUTIONS, TRADES } from '../marketplace/enums';
 
 export const BLOCK_CODES = ['ADM', 'STR', 'HUM', 'ELE', 'PLB', 'MEN', 'FIN', 'ENV', 'LOC'] as const;
 export type BlockCode = (typeof BLOCK_CODES)[number];
@@ -82,6 +83,14 @@ export const itemSchema = z
     measure: measureSchema.optional(),
     severity_rules: z.array(severityRuleSchema),
     works_hint: worksHintSchema.optional(),
+    /** Default "how to fix" path; derived from works_hint when absent (see defaultResolution). */
+    resolution: z.enum(RESOLUTIONS).optional(),
+    trade: z.enum(TRADES).optional(),
+    /** Practical-solution sheet explaining the problem (slug in `solutions`). */
+    solution_slug: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
     applies_to: z.object({
       property_types: z.array(z.enum(PROPERTY_TYPES)).optional(),
       purposes: z.array(z.enum(PURPOSES)).optional(),

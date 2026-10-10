@@ -15,6 +15,7 @@ import {
   TEMPLATE,
   WORKS,
 } from './seed-data';
+import { SOLUTIONS } from './solutions-data';
 
 export const SEED_PATH = fileURLToPath(new URL('../../../supabase/seed.sql', import.meta.url));
 
@@ -107,6 +108,28 @@ export function buildSeed(): string {
       ),
     ),
     'on conflict (key, channel, lang, version) do update set subject = excluded.subject, body = excluded.body;',
+    '',
+    '-- Practical solutions: seeded unpublished, published after review in the back-office.',
+    'insert into public.solutions (slug, category, title_i18n, summary_i18n, steps, materials, level, minutes, stop_signals_i18n, trade_fallback) values',
+    rows(
+      SOLUTIONS.map(
+        (x) =>
+          `${q(x.slug)}, ${q(x.category)}::public.solution_category, ${j(x.title)}, ${j({ fr: x.summary })}, ${j(
+            x.steps.map((fr) => ({ text_i18n: { fr } })),
+          )}, ${j(x.materials.map(([fr, price_mad]) => ({ name_i18n: { fr }, price_mad })))}, ${x.level}, ${x.minutes}, ${j(
+            x.stop.map((fr) => ({ fr })),
+          )}, ${q(x.trade)}::public.trade`,
+      ),
+    ),
+    'on conflict (slug) do update set title_i18n = excluded.title_i18n, summary_i18n = excluded.summary_i18n,',
+    '  steps = excluded.steps, materials = excluded.materials, level = excluded.level, minutes = excluded.minutes,',
+    '  stop_signals_i18n = excluded.stop_signals_i18n, trade_fallback = excluded.trade_fallback;',
+    '',
+    '-- Marketplace model A (8 % commission) active by default; referral hypothesis: 10 % of the order.',
+    'insert into public.marketplace_rules (model, commission_pct, response_hours, active, valid_from)',
+    "select 'commission', 0.08, 48, true, date '2026-01-01' where not exists (select 1 from public.marketplace_rules);",
+    'insert into public.referral_rules (referrer_role, commission_pct, valid_from)',
+    "select 'any', 0.10, date '2026-01-01' where not exists (select 1 from public.referral_rules);",
     '',
     'commit;',
     '',

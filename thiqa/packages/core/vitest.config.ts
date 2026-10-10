@@ -13,6 +13,7 @@ export default defineConfig({
         'src/state-machine.ts': { lines: 100, branches: 100, functions: 100, statements: 100 },
         'src/scoring/**': { lines: 100, branches: 100, functions: 100, statements: 100 },
         'src/checklist/severity.ts': { lines: 100, branches: 100, functions: 100, statements: 100 },
+        'src/marketplace/**': { lines: 100, branches: 100, functions: 100, statements: 100 },
       },
     },
   },

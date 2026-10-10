@@ -37,6 +37,15 @@ describe('SQL enums mirror @thiqa/core', () => {
     ['notification_channel', core.NOTIFICATION_CHANNELS],
     ['notification_status', core.NOTIFICATION_STATUSES],
     ['lang', core.LANGS],
+    ['resolution', core.RESOLUTIONS],
+    ['trade', core.TRADES],
+    ['partner_kind', core.PARTNER_KINDS],
+    ['partner_status', core.PARTNER_STATUSES],
+    ['quote_request_status', core.QUOTE_REQUEST_STATUSES],
+    ['quote_status', core.QUOTE_STATUSES],
+    ['referral_status', core.REFERRAL_STATUSES],
+    ['placement_kind', core.PLACEMENT_KINDS],
+    ['solution_category', core.SOLUTION_CATEGORIES],
   ] as const)('%s', (name, values) => {
     expect(sqlEnum(name)).toEqual([...values]);
   });
