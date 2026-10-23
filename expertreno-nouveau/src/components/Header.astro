@@ -54,6 +54,9 @@ const isActive = (lien: string) =>
       <a href="/espace-client" class="rounded-full px-3 py-2 text-sm font-medium text-ardoise transition-colors hover:text-foret">
         Espace client
       </a>
+      <a href="/devis" class="rounded-full bg-ocre px-4 py-2 text-sm font-bold text-foret shadow-sm transition-colors hover:bg-ocre-light">
+        Devis gratuit
+      </a>
       <BookingButton small />
     </div>
 
@@ -97,6 +100,11 @@ const isActive = (lien: string) =>
         ))
       }
       <li class="mt-2">
+        <a href="/devis" class="block rounded-full bg-ocre px-4 py-3 text-center text-base font-bold text-foret">
+          📋 Obtenir un devis gratuit
+        </a>
+      </li>
+      <li class="mt-1">
         <BookingButton label="Réserver un créneau" />
       </li>
     </ul>
