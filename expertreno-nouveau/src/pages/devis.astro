@@ -1,0 +1,461 @@
+---
+// ════════════════════════════════════════════════════════════════════
+//  OUTIL DE DEVIS — Expert Réno / Expert Travaux
+//  Génère un devis par corps détat (sinistre, pret, estimation, travaux)
+//  à partir de ta grille de prix, puis capture la demande dans le CRM.
+// ════════════════════════════════════════════════════════════════════
+---
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Obtenir un devis — Expert Réno</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--onyx:#1A1815;--brass:#B4894E;--brassd:#8A6A38;--ivory:#F7F4EF;--cream:#ECE7DF;--ink:#17150F;--taupe:#6E685E}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:var(--ivory);color:var(--ink);line-height:1.5;padding:0 0 60px}
+  header{border-bottom:1px solid var(--cream);background:#fff;position:sticky;top:0;z-index:5}
+  .bar{max-width:720px;margin:0 auto;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+  .logo{display:flex;align-items:center;gap:9px;font-family:'Fraunces',serif;font-weight:700;color:var(--onyx);font-size:17px}
+  .logo svg{width:32px;height:32px}
+  .tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brassd)}
+  main{max-width:720px;margin:0 auto;padding:26px 16px}
+  .back{background:none;border:none;color:var(--taupe);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:14px;display:none}
+  h1{font-family:'Fraunces',serif;font-size:26px;color:var(--onyx);text-align:center;line-height:1.15}
+  .sub{text-align:center;color:var(--taupe);margin:9px 0 22px;font-size:14.5px}
+  .screen{display:none}.screen.on{display:block;animation:f .25s ease}
+  @keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .cards{display:grid;gap:12px}
+  .pick{display:flex;gap:14px;align-items:flex-start;text-align:left;background:#fff;border:1.5px solid var(--cream);border-radius:16px;padding:16px 18px;cursor:pointer;transition:all .15s;width:100%}
+  .pick:hover{border-color:var(--brass);transform:translateY(-1px)}
+  .pem{font-size:25px;flex:none;line-height:1.1}
+  .ptxt{display:flex;flex-direction:column}
+  .pt{display:block;font-weight:700;font-size:16px;color:var(--ink)}
+  .ps{display:block;font-size:12.5px;color:var(--taupe);margin-top:4px}
+  .card{background:#fff;border:1px solid var(--cream);border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 10px 30px -22px rgba(26,24,21,.4)}
+  .lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--brassd);margin:0 0 12px;display:flex;align-items:center;gap:7px}
+  .line{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--cream);border-radius:11px;margin-bottom:8px}
+  .line:last-child{margin-bottom:0}
+  .line label{flex:1;font-size:14px;cursor:pointer}
+  .line input[type=number]{width:78px;border:1px solid var(--cream);border-radius:8px;padding:7px 10px;font-size:14px;font-family:inherit}
+  .unit{font-size:12px;color:var(--taupe);width:26px}
+  .sw{position:relative;width:44px;height:26px;flex:none}.sw input{opacity:0;width:0;height:0}
+  .sl{position:absolute;inset:0;background:#d9d2c6;border-radius:999px;transition:.2s;cursor:pointer}
+  .sl:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  .sw input:checked + .sl{background:var(--brass)}.sw input:checked + .sl:before{transform:translateX(18px)}
+  .btn{width:100%;background:var(--onyx);color:#fff;border:none;border-radius:999px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btn:hover{background:#000}
+  input.f,textarea.f{width:100%;border:1px solid var(--cream);border-radius:9px;padding:11px 14px;font-size:14px;font-family:inherit;outline:none;margin-bottom:9px}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg button{font-size:13px;font-weight:600;border:1px solid var(--cream);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer}
+  .seg button.on{background:var(--onyx);color:var(--ivory);border-color:var(--onyx)}
+  .drop{display:block;border:2px dashed var(--brass);border-radius:12px;padding:18px 14px;text-align:center;background:#FBF8F3;cursor:pointer;color:var(--brassd);font-weight:600;font-size:13.5px}
+  .drop small{display:block;color:var(--taupe);font-weight:400;font-size:12px;margin-top:4px}
+  .sheet{background:#fff;border:1px solid var(--cream);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+  .wm{position:absolute;top:46%;left:50%;transform:translate(-50%,-50%) rotate(-28deg);font-family:'Fraunces',serif;font-size:62px;font-weight:700;color:rgba(180,137,78,.13);pointer-events:none;white-space:nowrap}
+  .ent{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;border-bottom:2px solid var(--onyx);padding-bottom:10px}
+  .co{font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:var(--onyx)}
+  .sm{font-size:11px;color:var(--taupe);line-height:1.45}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:11.5px}
+  th{background:var(--onyx);color:var(--brass);text-align:left;padding:6px 7px;font-size:10px;text-transform:uppercase}
+  th.r,td.r{text-align:right}
+  td{padding:5px 7px;border-bottom:1px solid #f0ece4}
+  .grp td{background:#faf7f2;font-weight:700;color:var(--onyx)}
+  .tot{margin:12px 0 0 auto;width:250px;font-size:13px}
+  .tot div{display:flex;justify-content:space-between;padding:3px 0}
+  .tot .ttc{border-top:2px solid var(--onyx);margin-top:4px;padding-top:7px;font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:var(--onyx)}
+  .exits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  @media(max-width:480px){.exits{grid-template-columns:1fr}}
+  .ex{border:none;border-radius:12px;padding:14px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+  .ex1{background:var(--onyx);color:#fff}.ex2{background:var(--brass);color:var(--onyx)}
+  .note{font-size:12px;color:var(--taupe);text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="logo"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1A1815"/><circle cx="32" cy="32" r="23" fill="none" stroke="#B4894E" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="116 30" transform="rotate(125 32 32)"/><text x="17" y="42" font-family="Georgia,serif" font-size="28" font-weight="700" fill="#B4894E">E</text><text x="31" y="44" font-family="Georgia,serif" font-size="30" font-weight="700" fill="#F7F4EF">R</text></svg>Expert Réno</div>
+  <span class="tag">Obtenir un devis</span>
+</div></header>
+
+<main>
+  <button class="back" id="back">← Retour</button>
+
+  <!-- S0 -->
+  <div class="screen on" id="s0">
+    <h1>J'ai besoin d'un devis</h1>
+    <p class="sub">Pour quoi faire ? On s'adapte à votre besoin.</p>
+    <div class="cards">
+      <button class="pick" data-go="sinistre"><span class="pem">🛡️</span><span class="ptxt"><span class="pt">Pour un sinistre / mon assurance</span><span class="ps">[ Dégât des eaux, incendie, tempête… un devis au juste prix ]</span></span></button>
+      <button class="pick" data-go="pret"><span class="pem">🏦</span><span class="ptxt"><span class="pt">Pour un prêt travaux</span><span class="ps">[ Un devis détaillé et crédible pour votre financement ]</span></span></button>
+      <button class="pick" data-go="estim"><span class="pem">📊</span><span class="ptxt"><span class="pt">Pour une estimation</span><span class="ps">[ Savoir combien coûtent vos travaux — rénovation ou neuf ]</span></span></button>
+      <button class="pick" data-go="travaux"><span class="pem">🔨</span><span class="ptxt"><span class="pt">Pour faire réaliser mes travaux</span><span class="ps">[ Passer à l'action avec Expert Travaux ]</span></span></button>
+    </div>
+  </div>
+
+  <!-- S1 -->
+  <div class="screen" id="s1">
+    <h1>Quel type de sinistre ?</h1>
+    <p class="sub">On calcule sur la base de prix acceptée par les assurances.</p>
+    <div class="cards">
+      <button class="pick" data-go="eau"><span class="pem">💧</span><span class="ptxt"><span class="pt">Dégât des eaux</span><span class="ps">[ Fuite, infiltration, dégât venant du voisin du dessus… ]</span></span></button>
+      <button class="pick" data-go="feu"><span class="pem">🔥</span><span class="ptxt"><span class="pt">Incendie / fumées</span><span class="ps">[ Décontamination, déblais, plâtrerie, électricité… ]</span></span></button>
+      <button class="pick" data-go="tempete"><span class="pem">🌪️</span><span class="ptxt"><span class="pt">Tempête</span><span class="ps">[ Couverture, charpente, zinguerie, maçonnerie… ]</span></span></button>
+    </div>
+  </div>
+
+  <!-- S2 : DÉGÂT DES EAUX -->
+  <div class="screen" id="s2">
+    <h1>Dégât des eaux</h1>
+    <p class="sub">Pièce par pièce — ou décrivez à la voix.</p>
+    <div class="card" style="border-color:var(--brass)">
+      <div class="lbl">🎤 Pressé ? Décrivez vos travaux à la voix</div>
+      <p style="font-size:13px;color:var(--taupe);margin-bottom:10px">Dites : <b>la pièce</b>, les <b>surfaces abîmées</b> (sol, murs, plafond en m²), <b>ce qui est cassé</b>, le <b>niveau de finition</b>.</p>
+      <button class="btn" id="voice" style="background:var(--brass);color:var(--onyx)">🎙️ Enregistrer ma description (max 2 min)</button>
+      <p class="note" id="voicenote" style="text-align:left"></p>
+    </div>
+    <div class="card"><div class="lbl">⭐ Gamme des équipements</div><div class="seg gamme"><button class="on" data-g="essentiel">💧 Essentiel</button><button data-g="confort">⭐ Confort</button><button data-g="premium">💎 Premium</button></div></div>
+    <div class="card"><div class="lbl">🧨 Démolition / dépose</div>
+      <div class="line"><label>Démolir la faïence existante</label><input type="number" id="dm_faience" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Démolir / déposer le placo</label><input type="number" id="dm_placo" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_depcui"><span class="sl"></span></span><label for="c_depcui">Dépose de la cuisine équipée</label></div>
+    </div>
+    <div class="card"><div class="lbl">🔝 Plafond</div>
+      <div class="line"><label>Placo plafond (dépose + repose)</label><input type="number" id="pl_placo" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Peinture plafond</label><input type="number" id="pl_peint" value="0" min="0"><span class="unit">m²</span></div>
+    </div>
+    <div class="card"><div class="lbl">🧱 Murs</div>
+      <div class="line"><label>Placo / BA13 hydro à reprendre</label><input type="number" id="mu_placo" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Doublage isolé (placo + isolation)</label><input type="number" id="mu_doublage" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Toile de verre murs</label><input type="number" id="mu_toile" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Peinture murs</label><input type="number" id="mu_peint" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Faïence</label><input type="number" id="mu_faience" value="0" min="0"><span class="unit">m²</span></div>
+    </div>
+    <div class="card"><div class="lbl">🪵 Sols</div>
+      <div class="seg soltype" style="margin-bottom:10px"><button class="on" data-s="aucun">Aucun</button><button data-s="parquet">Parquet</button><button data-s="carrelage">Carrelage</button><button data-s="souple">Sol souple</button></div>
+      <div class="line"><label>Surface de sol</label><input type="number" id="so_surf" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Plinthes</label><input type="number" id="so_plinthe" value="0" min="0"><span class="unit">ml</span></div>
+    </div>
+    <div class="card"><div class="lbl">🚿 Sanitaire / plomberie</div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_cabine"><span class="sl"></span></span><label for="c_cabine">Dépose + repose cabine / receveur</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_bac"><span class="sl"></span></span><label for="c_bac">Fourniture + pose receveur</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_meuble"><span class="sl"></span></span><label for="c_meuble">Meuble vasque</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_wc"><span class="sl"></span></span><label for="c_wc">WC</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_robinet"><span class="sl"></span></span><label for="c_robinet">Robinetterie / mitigeur</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_plomberie"><span class="sl"></span></span><label for="c_plomberie">Modification / reprise du réseau de plomberie</label></div>
+    </div>
+    <div class="card"><div class="lbl">🔧 Divers</div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_fuite"><span class="sl"></span></span><label for="c_fuite">Recherche de fuite destructive</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_souscouche" checked><span class="sl"></span></span><label for="c_souscouche">Sous-couche (si parquet)</label></div>
+    </div>
+    <div class="card"><div class="lbl">📎 Plan / tableau de dommages / photos</div><label class="drop">Déposez votre plan, tableau de dommages ou photos<small>l'IA le lira pour ajuster le devis</small><input type="file" hidden multiple></label></div>
+    <button class="btn" id="gen-eau">Générer mon devis →</button>
+  </div>
+
+  <!-- S2E : INCENDIE -->
+  <div class="screen" id="s2e">
+    <h1>Incendie / fumées</h1>
+    <p class="sub">Décontamination, déblais puis remise en état (base MAIF).</p>
+    <div class="card"><div class="lbl">🧼 Décontamination (dépollution suies)</div>
+      <div class="line"><label>Plafonds à décontaminer</label><input type="number" id="fe_decoplaf" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Murs à décontaminer</label><input type="number" id="fe_decomur" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Sols à décontaminer</label><input type="number" id="fe_decosol" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Portes à lessiver</label><input type="number" id="fe_portes" value="0" min="0"><span class="unit">u</span></div>
+      <div class="line"><label>Fenêtres à lessiver</label><input type="number" id="fe_fenetres" value="0" min="0"><span class="unit">u</span></div>
+    </div>
+    <div class="card"><div class="lbl">🧨 Déblais / dépose</div>
+      <div class="line"><label>Purge plâtre + lattis plafond</label><input type="number" id="fe_purge" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Dépose placo + isolant détruits</label><input type="number" id="fe_depplaco" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="fe_cuisine"><span class="sl"></span></span><label for="fe_cuisine">Dépose cuisine équipée</label></div>
+    </div>
+    <div class="card"><div class="lbl">🧱 Remise en état</div>
+      <div class="line"><label>Repose placo plafond</label><input type="number" id="fe_placoplaf" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Repose placo murs</label><input type="number" id="fe_placomur" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Peinture plafonds</label><input type="number" id="fe_peintplaf" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Peinture murs</label><input type="number" id="fe_peintmur" value="0" min="0"><span class="unit">m²</span></div>
+    </div>
+    <div class="card"><div class="lbl">⚡ Électricité</div>
+      <div class="line"><span class="sw"><input type="checkbox" id="fe_elec"><span class="sl"></span></span><label for="fe_elec">Remise aux normes électrique (après incendie)</label></div>
+    </div>
+    <div class="card"><div class="lbl">📎 Plan / tableau de dommages / photos</div><label class="drop">Déposez votre dossier<small>l'IA le lira pour ajuster le devis</small><input type="file" hidden multiple></label></div>
+    <button class="btn" id="gen-feu">Générer mon devis →</button>
+  </div>
+
+  <!-- S2T : TEMPÊTE -->
+  <div class="screen" id="s2t">
+    <h1>Tempête</h1>
+    <p class="sub">Toiture, charpente, structure (prix assurance).</p>
+    <div class="card"><div class="lbl">🏠 Couverture (toiture)</div>
+      <div class="line"><label>Surface de toiture à reprendre</label><input type="number" id="te_toit" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="te_liteaux" checked><span class="sl"></span></span><label for="te_liteaux">Remplacement liteaux / volige</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="te_ecran" checked><span class="sl"></span></span><label for="te_ecran">Écran sous-toiture</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="te_echaf" checked><span class="sl"></span></span><label for="te_echaf">Échafaudage / sécurité</label></div>
+    </div>
+    <div class="card"><div class="lbl">🪚 Charpente</div>
+      <div class="line"><label>Réparation / renfort charpente</label><input type="number" id="te_charpente" value="0" min="0"><span class="unit">ml</span></div>
+    </div>
+    <div class="card"><div class="lbl">🌧️ Zinguerie</div>
+      <div class="line"><label>Gouttières / chéneaux</label><input type="number" id="te_gouttiere" value="0" min="0"><span class="unit">ml</span></div>
+      <div class="line"><label>Faîtage</label><input type="number" id="te_faitage" value="0" min="0"><span class="unit">ml</span></div>
+    </div>
+    <div class="card"><div class="lbl">🧱 Maçonnerie</div>
+      <div class="line"><label>Reprise de maçonnerie (façade, mur…)</label><input type="number" id="te_maco" value="0" min="0"><span class="unit">m²</span></div>
+    </div>
+    <div class="card"><div class="lbl">🪟 Menuiseries</div>
+      <div class="line"><label>Fenêtres à remplacer</label><input type="number" id="te_fenetres" value="0" min="0"><span class="unit">u</span></div>
+      <div class="line"><label>Volets à remplacer</label><input type="number" id="te_volets" value="0" min="0"><span class="unit">u</span></div>
+    </div>
+    <div class="card"><div class="lbl">📎 Plan / photos des dégâts</div><label class="drop">Déposez vos photos / constat<small>l'IA le lira pour ajuster le devis</small><input type="file" hidden multiple></label></div>
+    <button class="btn" id="gen-tempete">Générer mon devis →</button>
+  </div>
+
+  <!-- S2G : TRAVAUX / PRÊT / ESTIMATION (par lots) -->
+  <div class="screen" id="s2g">
+    <h1 id="g2-title">Votre projet de travaux</h1>
+    <p class="sub" id="g2-sub"></p>
+    <div class="card"><div class="lbl">🏗️ Nature du projet</div>
+      <div class="seg nature" style="margin-bottom:10px"><button class="on" data-n="reno">Rénovation complète</button><button data-n="piece">Une / des pièces</button><button data-n="neuf">Construction neuve</button></div>
+      <div class="line"><label>Surface concernée</label><input type="number" id="tv_surf" value="0" min="0"><span class="unit">m²</span></div>
+    </div>
+    <div class="card"><div class="lbl">🧱 Gros œuvre / maçonnerie</div>
+      <div class="line"><label>Ouverture de mur / création d'ouverture</label><input type="number" id="tv_ouv" value="0" min="0"><span class="unit">u</span></div>
+      <div class="line"><label>Dalle / chape béton</label><input type="number" id="tv_dalle" value="0" min="0"><span class="unit">m²</span></div>
+    </div>
+    <div class="card"><div class="lbl">🪵 Plâtrerie / isolation</div>
+      <div class="line"><label>Cloisons placo</label><input type="number" id="tv_cloison" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Doublage isolé (murs)</label><input type="number" id="tv_doublage" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Faux plafond</label><input type="number" id="tv_fauxplaf" value="0" min="0"><span class="unit">m²</span></div>
+    </div>
+    <div class="card"><div class="lbl">🚿 Carrelage / faïence</div>
+      <div class="line"><label>Carrelage au sol</label><input type="number" id="tv_carr" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Faïence</label><input type="number" id="tv_faience" value="0" min="0"><span class="unit">m²</span></div>
+    </div>
+    <div class="card"><div class="lbl">🪵 Parquet / peinture</div>
+      <div class="line"><label>Parquet / sol stratifié</label><input type="number" id="tv_parquet" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Peinture (murs + plafonds)</label><input type="number" id="tv_peint" value="0" min="0"><span class="unit">m²</span></div>
+    </div>
+    <div class="card"><div class="lbl">🚰 Plomberie / ⚡ électricité</div>
+      <div class="line"><label>Points d'eau à créer / déplacer</label><input type="number" id="tv_eau" value="0" min="0"><span class="unit">u</span></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="tv_chauffe"><span class="sl"></span></span><label for="tv_chauffe">Chauffe-eau / chaudière</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="tv_elec"><span class="sl"></span></span><label for="tv_elec">Électricité — mise aux normes complète</label></div>
+    </div>
+    <div class="card"><div class="lbl">🪟 Menuiseries / cuisine</div>
+      <div class="line"><label>Fenêtres</label><input type="number" id="tv_fen" value="0" min="0"><span class="unit">u</span></div>
+      <div class="line"><label>Portes intérieures</label><input type="number" id="tv_porte" value="0" min="0"><span class="unit">u</span></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="tv_cuisine"><span class="sl"></span></span><label for="tv_cuisine">Cuisine équipée</label></div>
+    </div>
+    <div class="card"><div class="lbl">📎 Plan / photos</div><label class="drop">Déposez votre plan / photos<small>l'IA le lira pour affiner le devis</small><input type="file" hidden multiple></label></div>
+    <button class="btn" id="gen-travaux">Générer mon devis →</button>
+  </div>
+
+  <!-- S3 devis -->
+  <div class="screen" id="s3">
+    <div class="card">
+      <div class="sheet">
+        <div class="wm">SPÉCIMEN</div>
+        <div class="ent">
+          <div><div class="co">Expert Travaux</div><div class="sm"><b>AKHALOUF Youness</b><br>3 pradets des Fraysses — 31810 Clermont le fort<br>Tél : 07 81 84 41 03 · expert.conseil.travaux@gmail.com<br>SIRET : 485 082 994 00032</div></div>
+          <div class="sm" style="text-align:right">Devis N° <b id="dnum"></b><br>Date : <span id="ddate"></span><br>Validité : 1 mois</div>
+        </div>
+        <div id="dossierTxt" style="font-size:13px;font-weight:700;margin:10px 0 2px"></div>
+        <table><thead><tr><th>Désignation</th><th class="r">Qté</th><th>U</th><th class="r">P.U. HT</th><th class="r">Total HT</th></tr></thead><tbody id="rows"></tbody></table>
+        <div class="tot"><div><span>Sous-total HT</span><span id="t_ht"></span></div><div><span>TVA</span><span id="t_tva"></span></div><div class="ttc"><span>Total TTC</span><span id="t_ttc"></span></div></div>
+      </div>
+      <p class="note">Prix indicatifs · évacuation 1 % · TVA 10 % · base assurance (MAIF) pour les sinistres.</p>
+      <div class="exits">
+        <button class="ex ex2" id="pay">📄 Recevez votre devis officiel</button>
+        <button class="ex ex1" id="do">🔨 Faire réaliser par Expert Travaux</button>
+      </div>
+      <p class="note" id="paynote"></p>
+    </div>
+    <div class="card" id="capture" style="display:none">
+      <div class="lbl" id="cap-title">Vos coordonnées — on vous recontacte</div>
+      <input class="f" id="cap-prenom" placeholder="Prénom *">
+      <input class="f" id="cap-nom" placeholder="Nom">
+      <input class="f" id="cap-tel" type="tel" placeholder="Téléphone *">
+      <input class="f" id="cap-email" type="email" placeholder="Email *">
+      <button class="btn" id="cap-send">Envoyer →</button>
+      <p class="note" id="cap-done" style="text-align:left"></p>
+    </div>
+  </div>
+
+  <!-- generic -->
+  <div class="screen" id="sg">
+    <h1 id="g-title">Votre projet</h1>
+    <p class="sub" id="g-sub"></p>
+    <div class="card" id="g-neufreno"><div class="lbl">Neuf ou rénovation ?</div><div class="seg nr"><button>🔧 Rénovation</button><button>🏗️ Neuf</button></div></div>
+    <div class="card"><div class="lbl">Parlez-nous de votre projet</div>
+      <textarea class="f" rows="3" placeholder="Décrivez vos travaux…"></textarea>
+      <label class="drop" style="margin-bottom:10px">📎 Déposez votre plan / photos<small>facultatif</small><input type="file" hidden multiple></label>
+      <input class="f" placeholder="Prénom *"><input class="f" type="tel" placeholder="Téléphone *"><input class="f" type="email" placeholder="Email *">
+      <button class="btn" id="g-send">Envoyer ma demande →</button>
+      <p class="note" id="g-done"></p>
+    </div>
+  </div>
+</main>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+  const SB_URL=import.meta.env.PUBLIC_SUPABASE_URL, SB_KEY=import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  const supabase=(SB_URL&&SB_KEY)?createClient(SB_URL,SB_KEY):null;
+  let lastDevis=null, capIntent='';
+  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+  const euro=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  const V=id=>+(document.getElementById(id)?.value)||0, CK=id=>!!document.getElementById(id)?.checked;
+  let hist=['s0'], gamme='essentiel', soltype='aucun', nature='reno', travauxBut='travaux';
+  const GAMME={essentiel:1, confort:1.4, premium:2};
+  function show(id){ $$('.screen').forEach(s=>s.classList.remove('on')); $('#'+id).classList.add('on'); $('#back').style.display=id==='s0'?'none':'block'; window.scrollTo({top:0,behavior:'smooth'}); }
+  function go(id){ hist.push(id); show(id); }
+  $('#back').addEventListener('click',()=>{ hist.pop(); show(hist[hist.length-1]||'s0'); });
+
+  document.addEventListener('click',e=>{
+    const swx=e.target.closest('.sw'); if(swx){ const cb=swx.querySelector('input[type=checkbox]'); if(cb && e.target!==cb) cb.checked=!cb.checked; return; }
+    const p=e.target.closest('.pick'); if(p){ const g=p.dataset.go;
+      if(g==='sinistre') go('s1'); else if(g==='eau') go('s2'); else if(g==='feu') go('s2e'); else if(g==='tempete') go('s2t');
+      else if(g==='pret'){ travauxBut='prêt travaux'; openTravaux('Devis pour un prêt travaux','Détaillé et crédible pour votre banque — cochez les lots.'); }
+      else if(g==='estim'){ travauxBut='estimation'; openTravaux('Estimation de votre projet','Cochez les lots concernés, on vous chiffre tout.'); }
+      else if(g==='travaux'){ travauxBut='réalisation'; openTravaux('Faire réaliser vos travaux','Cochez les lots, le devis se calcule tout seul.'); }
+      return; }
+    const gb=e.target.closest('.gamme button'); if(gb){ gb.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on')); gb.classList.add('on'); gamme=gb.dataset.g; return; }
+    const st=e.target.closest('.soltype button'); if(st){ st.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on')); st.classList.add('on'); soltype=st.dataset.s; return; }
+    const nt=e.target.closest('.nature button'); if(nt){ nt.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on')); nt.classList.add('on'); nature=nt.dataset.n; return; }
+    const sb=e.target.closest('.nr button'); if(sb){ sb.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on')); sb.classList.add('on'); }
+  });
+  function openGeneric(t,s,n){ $('#g-title').textContent=t; $('#g-sub').textContent=s; $('#g-neufreno').style.display=n?'block':'none'; $('#g-done').textContent=''; go('sg'); }
+  $('#g-send').addEventListener('click',()=>{ $('#g-done').textContent='✅ Merci ! (prototype) — la demande part dans ton CRM + email.'; });
+  $('#voice')?.addEventListener('click',()=>{ $('#voicenote').textContent='🎙️ (Démo) → enregistrement → transcription → l\'IA pré-remplit le devis. Limité à ~2 min / quota de tokens pour maîtriser le coût.'; });
+
+  // rendu partagé du devis
+  function renderDevis(rows, dossier){
+    // évacuation déchets 1%
+    let htW=rows.filter(r=>!r.grp).reduce((a,r)=>a+r.tot,0);
+    rows.push({grp:'Évacuation'}); rows.push({d:'Évacuation et traitement des déchets (1 %)',q:1,u:'F',pu:+(htW*0.01).toFixed(2),tva:0.1,tot:+(htW*0.01).toFixed(2)});
+    const F=[]; for(let i=0;i<rows.length;i++){ const r=rows[i]; if(r.grp){ if(rows[i+1]&&!rows[i+1].grp) F.push(r); } else F.push(r); }
+    const tb=$('#rows'); tb.innerHTML=''; let ht=0,tva=0;
+    F.forEach(r=>{ if(r.grp) tb.insertAdjacentHTML('beforeend',`<tr class="grp"><td colspan="5">${r.grp}</td></tr>`);
+      else{ ht+=r.tot; tva+=r.tot*(r.tva||0.1); tb.insertAdjacentHTML('beforeend',`<tr><td>${r.d}</td><td class="r">${(''+r.q).replace('.',',')}</td><td>${r.u}</td><td class="r">${euro(r.pu)}</td><td class="r">${euro(r.tot)}</td></tr>`);} });
+    tva=+tva.toFixed(2);
+    $('#t_ht').textContent=euro(ht); $('#t_tva').textContent=euro(tva); $('#t_ttc').textContent=euro(ht+tva);
+    $('#dossierTxt').textContent='DOSSIER : '+dossier;
+    $('#dnum').textContent=new Date().toISOString().slice(0,10).replace(/-/g,''); $('#ddate').textContent=new Date().toLocaleDateString('fr-FR');
+    const resume=F.filter(r=>!r.grp).map(r=>`- ${r.d} : ${(''+r.q).replace('.',',')} ${r.u} x ${euro(r.pu)} = ${euro(r.tot)}`).join('\n');
+    lastDevis={ dossier, ht:+ht.toFixed(2), ttc:+(ht+tva).toFixed(2), resume };
+    const cap=$('#capture'); if(cap) cap.style.display='none';
+    go('s3');
+  }
+  function mk(){ const rows=[]; return { rows, G:t=>rows.push({grp:t}), L:(d,q,u,pu,tva=0.1)=>{ if(q>0) rows.push({d,q:+(+q).toFixed(2),u,pu:+(+pu).toFixed(2),tva,tot:+(q*pu).toFixed(2)}); } }; }
+
+  // ===== DÉGÂT DES EAUX =====
+  const Peau={ dm_faience:15,dm_placo:15,depose_cuisine:800,depose_parquet:12,depose_cabine:220,
+    placo:63,doublage:63,enduit:220,toile:18,peint:22.5,faience:90,
+    parquet:55,carrelage_sol:70,souple_sol:48,plinthe:14.80,souscouche:8.80,repose_cuisine:850,
+    repose_cabine:320,receveur:590,meuble:550,wc:450,robinet:180,raccord:220,modif_plomberie:350,fuite:440 };
+  $('#gen-eau').addEventListener('click',()=>{ const g=GAMME[gamme],P=Peau,{rows,G,L}=mk();
+    const dmFai=V('dm_faience'),dmPlaco=V('dm_placo'),plPlaco=V('pl_placo'),plPeint=V('pl_peint');
+    const muPlaco=V('mu_placo'),muDoub=V('mu_doublage'),muToile=V('mu_toile'),muPeint=V('mu_peint'),muFai=V('mu_faience');
+    const soSurf=V('so_surf'),soPlin=V('so_plinthe');
+    G('Démolition / Dépose');
+    L('Démolition de la faïence existante',dmFai,'m²',P.dm_faience); L('Dépose / démolition du placo',dmPlaco,'m²',P.dm_placo);
+    if(CK('c_depcui')) L('Dépose de la cuisine équipée',1,'F',P.depose_cuisine);
+    if(soltype==='parquet') L('Dépose du parquet + plinthes',soSurf,'m²',P.depose_parquet);
+    if(CK('c_cabine')) L('Dépose + repose cabine / receveur',1,'F',P.depose_cabine);
+    L('Protection chantier',1,'F',120);
+    if(plPlaco>0||plPeint>0){ G('Plafond'); L('Dépose + repose placo plafond',plPlaco,'m²',P.placo); L('Peinture plafond (2 couches)',plPeint,'m²',P.peint); }
+    if(muPlaco>0||muDoub>0||muToile>0||muPeint>0||muFai>0){ G('Murs');
+      if(muPlaco>0){ L('Placo BA13 hydrofuge',muPlaco,'m²',P.placo); L('Bande + enduit',1,'F',P.enduit); }
+      L('Doublage isolé (placo + isolation)',muDoub,'m²',P.doublage*g);
+      L('Toile de verre murs',muToile,'m²',P.toile*g); L('Peinture murs',muPeint,'m²',P.peint); L('Faïence',muFai,'m²',P.faience*g); }
+    if(soSurf>0&&soltype!=='aucun'){ G('Sols');
+      if(soltype==='parquet'){ if(CK('c_souscouche')) L('Sous-couche',soSurf,'m²',P.souscouche); L('Parquet flottant',soSurf,'m²',P.parquet*g); }
+      else if(soltype==='carrelage') L('Carrelage',soSurf,'m²',P.carrelage_sol*g);
+      else L('Sol souple (PVC/lino)',soSurf,'m²',P.souple_sol*g); }
+    L('Plinthes', soPlin,'ml',P.plinthe*g);
+    if(CK('c_depcui')) { G('Cuisine'); L('Repose de la cuisine équipée',1,'F',P.repose_cuisine); }
+    if(CK('c_bac')||CK('c_meuble')||CK('c_wc')||CK('c_robinet')||CK('c_plomberie')||CK('c_cabine')){ G('Sanitaire / Plomberie');
+      if(CK('c_bac')){ L('Fourniture et pose receveur',1,'U',P.receveur*g); L('Raccordement plomberie receveur',1,'F',P.raccord); }
+      if(CK('c_cabine')) L('Repose cabine + mitigeur',1,'U',P.repose_cabine);
+      if(CK('c_meuble')) L('Fourniture et pose meuble vasque',1,'U',P.meuble*g);
+      if(CK('c_wc')) L('Fourniture et pose WC',1,'U',P.wc*g);
+      if(CK('c_robinet')) L('Fourniture et pose robinetterie',1,'U',P.robinet*g);
+      if(CK('c_plomberie')) L('Modification / reprise réseau plomberie',1,'F',P.modif_plomberie); }
+    if(CK('c_fuite')){ G('Recherche de fuite'); L('Recherche de fuite destructive',1,'F',P.fuite,0.2); }
+    renderDevis(rows,'Reprise suite à un dégât des eaux');
+  });
+
+  // ===== INCENDIE =====
+  const Pfeu={ deco_plaf:5,deco_mur:5,deco_sol:3.6,lessiv_porte:21,lessiv_fenetre:18,
+    purge:12,dep_placo:18.5,placo:45,enduit:220,peint:22.5,elec:1800,benne:900,carton:2.9 };
+  $('#gen-feu').addEventListener('click',()=>{ const P=Pfeu,{rows,G,L}=mk();
+    G('Décontamination (dépollution)');
+    L('Décontamination plafonds (gommage)',V('fe_decoplaf'),'m²',P.deco_plaf);
+    L('Décontamination murs (gommage)',V('fe_decomur'),'m²',P.deco_mur);
+    L('Décontamination sols + protection',V('fe_decosol'),'m²',P.deco_sol);
+    L('Lessivage des portes',V('fe_portes'),'U',P.lessiv_porte);
+    L('Lessivage des fenêtres',V('fe_fenetres'),'U',P.lessiv_fenetre);
+    G('Déblais / Dépose');
+    L('Purge plâtre + lattis plafond',V('fe_purge'),'m²',P.purge);
+    L('Dépose placo + isolant détruits',V('fe_depplaco'),'m²',P.dep_placo);
+    if(CK('fe_cuisine')) L('Dépose de la cuisine équipée',1,'F',800);
+    G('Remise en état');
+    if(V('fe_placoplaf')>0){ L('Repose placo plafond',V('fe_placoplaf'),'m²',P.placo); }
+    if(V('fe_placomur')>0){ L('Repose placo murs',V('fe_placomur'),'m²',P.placo); L('Bande + enduit',1,'F',P.enduit); }
+    L('Peinture plafonds (2 couches)',V('fe_peintplaf'),'m²',P.peint);
+    L('Peinture murs (prépa + 2 couches)',V('fe_peintmur'),'m²',P.peint);
+    if(CK('fe_elec')){ G('Électricité'); L('Remise aux normes de l\'installation électrique',1,'F',P.elec); }
+    G('Logistique'); L('Benne + évacuation en centre agréé',1,'F',P.benne);
+    renderDevis(rows,'Remise en état suite à un incendie');
+  });
+
+  // ===== TEMPÊTE =====
+  const Ptemp={ tuiles:65,liteaux:25,ecran:15,echaf:900,charpente:55,gouttiere:45,faitage:40,maco:85,fenetre:550,volet:350 };
+  $('#gen-tempete').addEventListener('click',()=>{ const P=Ptemp,{rows,G,L}=mk();
+    const toit=V('te_toit');
+    if(toit>0||CK('te_echaf')){ G('Couverture');
+      if(CK('te_echaf')) L('Échafaudage / sécurisation',1,'F',P.echaf);
+      L('Dépose et repose de la couverture (tuiles)',toit,'m²',P.tuiles);
+      if(CK('te_liteaux')) L('Remplacement liteaux / volige',toit,'m²',P.liteaux);
+      if(CK('te_ecran')) L('Pose écran sous-toiture',toit,'m²',P.ecran); }
+    if(V('te_charpente')>0){ G('Charpente'); L('Réparation / renfort de charpente',V('te_charpente'),'ml',P.charpente); }
+    if(V('te_gouttiere')>0||V('te_faitage')>0){ G('Zinguerie');
+      L('Gouttières / chéneaux',V('te_gouttiere'),'ml',P.gouttiere); L('Faîtage',V('te_faitage'),'ml',P.faitage); }
+    if(V('te_maco')>0){ G('Maçonnerie'); L('Reprise de maçonnerie',V('te_maco'),'m²',P.maco); }
+    if(V('te_fenetres')>0||V('te_volets')>0){ G('Menuiseries');
+      L('Fourniture et pose fenêtre',V('te_fenetres'),'U',P.fenetre); L('Fourniture et pose volet',V('te_volets'),'U',P.volet); }
+    renderDevis(rows,'Réparations suite à une tempête');
+  });
+
+  function openTravaux(t,s){ $('#g2-title').textContent=t; $('#g2-sub').textContent=s; go('s2g'); }
+  const Ptrav={ ouverture:1500,dalle:80,cloison:55,doublage:63,fauxplaf:55,carr:70,faience:90,parquet:55,peint:22.5,eau:350,chauffe:900,elec:2500,fen:550,porte:350,cuisine:5000 };
+  $('#gen-travaux')?.addEventListener('click',()=>{ const P=Ptrav,{rows,G,L}=mk();
+    G('Gros œuvre / Maçonnerie'); L('Ouverture de mur / création d\'ouverture',V('tv_ouv'),'U',P.ouverture); L('Dalle / chape béton',V('tv_dalle'),'m²',P.dalle);
+    G('Plâtrerie / Isolation'); L('Cloisons placo',V('tv_cloison'),'m²',P.cloison); L('Doublage isolé',V('tv_doublage'),'m²',P.doublage); L('Faux plafond',V('tv_fauxplaf'),'m²',P.fauxplaf);
+    G('Carrelage / Faïence'); L('Carrelage au sol',V('tv_carr'),'m²',P.carr); L('Faïence',V('tv_faience'),'m²',P.faience);
+    G('Sols / Peinture'); L('Parquet / sol stratifié',V('tv_parquet'),'m²',P.parquet); L('Peinture (murs + plafonds)',V('tv_peint'),'m²',P.peint);
+    G('Plomberie / Électricité'); L('Création / déplacement de points d\'eau',V('tv_eau'),'U',P.eau); if(CK('tv_chauffe')) L('Chauffe-eau / chaudière',1,'F',P.chauffe); if(CK('tv_elec')) L('Électricité — mise aux normes complète',1,'F',P.elec);
+    G('Menuiseries'); L('Fourniture et pose fenêtre',V('tv_fen'),'U',P.fen); L('Fourniture et pose porte intérieure',V('tv_porte'),'U',P.porte); if(CK('tv_cuisine')) L('Fourniture et pose cuisine équipée',1,'F',P.cuisine);
+    renderDevis(rows,'Devis de travaux ('+travauxBut+')');
+  });
+  function openCapture(intent){ capIntent=intent; $('#cap-title').textContent = intent==='assurance' ? 'Recevez votre devis officiel — vos coordonnées' : 'Faites réaliser par Expert Travaux — on vous recontacte'; $('#capture').style.display='block'; $('#capture').scrollIntoView({behavior:'smooth'}); }
+  $('#pay')?.addEventListener('click',()=>openCapture('assurance'));
+  $('#do')?.addEventListener('click',()=>openCapture('travaux'));
+  $('#cap-send')?.addEventListener('click',async()=>{
+    const prenom=$('#cap-prenom').value.trim(), nom=$('#cap-nom').value.trim(), tel=$('#cap-tel').value.trim(), email=$('#cap-email').value.trim();
+    if(!prenom||!tel||!email){ $('#cap-done').textContent='Merci de renseigner prénom, téléphone et email.'; return; }
+    if(!supabase){ $('#cap-done').textContent='Service momentanément indisponible — appelez-nous au 07 81 84 41 03.'; return; }
+    const btn=$('#cap-send'); btn.disabled=true; btn.textContent='Envoi…';
+    const { error } = await supabase.from('leads').insert({
+      prenom, nom, email, telephone:tel,
+      type_projet: lastDevis?lastDevis.dossier:'Demande de devis',
+      budget: lastDevis?('≈ '+euro(lastDevis.ttc)+' TTC'):'',
+      message: (capIntent==='assurance'?'DEVIS POUR ASSURANCE':'DEMANDE DE TRAVAUX')+' — '+(lastDevis?lastDevis.dossier:'')+'\n\n'+(lastDevis?lastDevis.resume:''),
+      source: 'devis-'+capIntent,
+      data: { intent:capIntent, devis:lastDevis },
+    });
+    btn.disabled=false; btn.textContent='Envoyer →';
+    if(error){ $('#cap-done').textContent='Une erreur est survenue. Réessayez ou appelez-nous.'; console.error(error); return; }
+    $('#capture').innerHTML='<div class="lbl">✅ Merci, c\'est envoyé !</div><p class="note" style="text-align:left">Demande bien reçue. Un expert vous recontacte sous 24-48 h.</p>';
+  });
+</script>
+</body>
+</html>
