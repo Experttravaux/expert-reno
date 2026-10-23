@@ -70,7 +70,7 @@ export const reseaux = {
 // Modifiez les libellés ou l'ordre ici ; les liens doivent correspondre aux pages.
 export const navigation = [
   { libelle: 'Accueil', lien: '/' },
-  { libelle: 'Devis en ligne', lien: '/devis' },
+  { libelle: 'Devis', lien: '/devis' },
   { libelle: 'Services', lien: '/services' },
   { libelle: 'Projets', lien: '/projets' },
   { libelle: 'Professionnels', lien: '/professionnels' },
