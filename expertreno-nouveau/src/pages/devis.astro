@@ -224,6 +224,17 @@
       <div class="seg nature" style="margin-bottom:10px"><button class="on" data-n="reno">Rénovation complète</button><button data-n="piece">Une / des pièces</button><button data-n="neuf">Construction neuve</button></div>
       <div class="line"><label>Surface concernée</label><input type="number" id="tv_surf" value="0" min="0"><span class="unit">m²</span></div>
     </div>
+    <div class="card"><div class="lbl">🏠 Pièces concernées</div>
+      <div class="line"><span class="sw"><input type="checkbox" id="pc_chambre"><span class="sl"></span></span><label for="pc_chambre">Chambre</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="pc_salon"><span class="sl"></span></span><label for="pc_salon">Salon / séjour</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="pc_cuisine"><span class="sl"></span></span><label for="pc_cuisine">Cuisine</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="pc_sdb"><span class="sl"></span></span><label for="pc_sdb">Salle de bain</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="pc_wc"><span class="sl"></span></span><label for="pc_wc">WC</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="pc_couloir"><span class="sl"></span></span><label for="pc_couloir">Entrée / couloir</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="pc_bureau"><span class="sl"></span></span><label for="pc_bureau">Bureau</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="pc_garage"><span class="sl"></span></span><label for="pc_garage">Garage / cave</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="pc_ext"><span class="sl"></span></span><label for="pc_ext">Extérieur / terrasse</label></div>
+    </div>
     <div class="card"><div class="lbl">🧱 Gros œuvre / maçonnerie</div>
       <div class="line"><label>Ouverture de mur / création d'ouverture</label><input type="number" id="tv_ouv" value="0" min="0"><span class="unit">u</span></div>
       <div class="line"><label>Dalle / chape béton</label><input type="number" id="tv_dalle" value="0" min="0"><span class="unit">m²</span></div>
@@ -461,7 +472,8 @@
     if(CK('et_exe')){ const v=+(worksTotal*0.03).toFixed(2); etu.push({d:"Plans d'exécution (3 % des travaux)",q:1,u:'forfait',pu:v,tva:0.1,tot:v,noWaste:true}); }
     if(CK('et_amo')){ const v=+(worksTotal*0.10).toFixed(2); etu.push({d:'Maîtrise d’œuvre / AMO — suivi & coordination (10 %)',q:1,u:'forfait',pu:v,tva:0.1,tot:v,noWaste:true}); }
     if(etu.length){ rows.push({grp:'Études, plans & maîtrise d’œuvre'}); etu.forEach(e=>rows.push(e)); }
-    renderDevis(rows,'Devis de travaux ('+travauxBut+')');
+    const pieces=[['pc_chambre','Chambre'],['pc_salon','Salon/séjour'],['pc_cuisine','Cuisine'],['pc_sdb','Salle de bain'],['pc_wc','WC'],['pc_couloir','Entrée/couloir'],['pc_bureau','Bureau'],['pc_garage','Garage/cave'],['pc_ext','Extérieur/terrasse']].filter(x=>CK(x[0])).map(x=>x[1]).join(', ');
+    renderDevis(rows,'Devis de travaux ('+travauxBut+')'+(pieces?' — Pièces : '+pieces:''));
   });
   function openCapture(intent){ capIntent=intent; $('#cap-title').textContent = intent==='assurance' ? 'Recevez votre devis par email — vos coordonnées' : 'Faites réaliser par Expert Travaux — vos coordonnées'; $('#capture').style.display='block'; $('#capture').scrollIntoView({behavior:'smooth'}); }
   $('#pay')?.addEventListener('click',()=>openCapture('assurance'));
