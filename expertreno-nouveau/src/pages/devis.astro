@@ -291,10 +291,10 @@
     </div>
     <div class="card"><div class="lbl">🏗️ Structure & toiture</div>
       <div class="line"><label>Plancher à créer</label><select id="su_plancher" class="minisel"><option value="220">Hourdis béton</option><option value="150">Plancher bois</option></select></div>
-      <div class="line"><label>Structure des murs</label><select id="su_struct" class="minisel"><option value="220">Ossature bois</option><option value="130">Parpaing / brique</option></select></div>
+      <div class="line"><label>Structure des murs</label><select id="su_struct" class="minisel"><option value="280">Ossature bois</option><option value="160">Parpaing / brique</option></select></div>
       <div class="line"><span class="sw"><input type="checkbox" id="su_depose" checked><span class="sl"></span></span><label for="su_depose">Dépose charpente + couverture existante</label></div>
       <div class="line"><label>Charpente neuve</label><select id="su_charp" class="minisel"><option value="220">Traditionnelle</option><option value="150">Fermette</option></select></div>
-      <div class="line"><label>Couverture</label><select id="su_couv" class="minisel"><option value="90">Tuile mécanique</option><option value="110">Tuile canal</option><option value="180">Ardoise</option></select></div>
+      <div class="line"><label>Couverture</label><select id="su_couv" class="minisel"><option value="110">Tuile mécanique</option><option value="130">Tuile canal</option><option value="200">Ardoise</option></select></div>
       <div class="line"><span class="sw"><input type="checkbox" id="su_zing" checked><span class="sl"></span></span><label for="su_zing">Zinguerie (gouttières, noues)</label></div>
       <div class="line"><label>Fenêtres de toit (Velux)</label><input type="number" id="su_velux" value="0" min="0"><span class="unit">u</span></div>
       <div class="line"><label>Fenêtres en façade</label><input type="number" id="su_fen" value="0" min="0"><span class="unit">u</span></div>
@@ -302,8 +302,15 @@
     <div class="card"><div class="lbl">🎨 Finitions & technique</div>
       <div class="line"><label>Revêtement de sol</label><select id="su_sol" class="minisel"><option value="55">Parquet / stratifié</option><option value="70">Carrelage</option></select></div>
       <div class="line"><span class="sw"><input type="checkbox" id="su_escalier" checked><span class="sl"></span></span><label for="su_escalier">Création d'un escalier d'accès</label></div>
-      <div class="line"><span class="sw"><input type="checkbox" id="su_chauf" checked><span class="sl"></span></span><label for="su_chauf">Chauffage (radiateurs électriques)</label></div>
+      <div class="line"><label>Chauffage des pièces créées</label><select id="su_chauf" class="minisel"><option value="60">Radiateurs électriques</option><option value="120">Clim réversible + radiateur SdB</option><option value="90">Raccordement chaudière existante</option></select></div>
       <div class="line"><span class="sw"><input type="checkbox" id="su_acces"><span class="sl"></span></span><label for="su_acces">Accès difficile / hyper-centre (+20 %)</label></div>
+    </div>
+    <div class="card"><div class="lbl">🔧 Travaux sur l'étage inférieur</div>
+      <div class="line"><span class="sw"><input type="checkbox" id="si_tremie" checked><span class="sl"></span></span><label for="si_tremie">Ouverture de trémie (passage de l'escalier)</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="si_struct"><span class="sl"></span></span><label for="si_struct">Renforcement / reprise de structure</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="si_cloisons"><span class="sl"></span></span><label for="si_cloisons">Réagencement (déplacement de cloisons)</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="si_elec"><span class="sl"></span></span><label for="si_elec">Reprise électricité</label></div>
+      <div class="line"><label>Rafraîchissement (peinture + sol)</label><input type="number" id="si_rafr" value="0" min="0"><span class="unit">m²</span></div>
     </div>
     <div class="card"><div class="lbl">📐 Études, plans & maîtrise d'œuvre</div>
       <div class="line"><span class="sw"><input type="checkbox" id="su_archi"><span class="sl"></span></span><label for="su_archi">Plan d'architecte (avant-projet)</label></div>
@@ -553,7 +560,13 @@
     G('Électricité & chauffage');
     L('Électricité — création complète',S,'m²',85);
     L('Modification / raccordement au tableau existant',1,'F',800);
-    if(CK('su_chauf')) L('Chauffage — radiateurs électriques',V('su_pieces')||1,'U',350);
+    L('Chauffage ('+selTxt('su_chauf')+')',S,'m²',V('su_chauf'));
+    if(CK('si_tremie')||CK('si_struct')||CK('si_cloisons')||CK('si_elec')||V('si_rafr')>0){ G('Travaux sur l\'étage inférieur');
+      if(CK('si_tremie')) L('Ouverture de trémie (passage escalier)',1,'F',1500);
+      if(CK('si_struct')) L('Renforcement / reprise de structure',1,'F',2500);
+      if(CK('si_cloisons')) L('Réagencement (déplacement de cloisons)',1,'F',1500);
+      if(CK('si_elec')) L('Reprise électricité étage inférieur',1,'F',1500);
+      L('Rafraîchissement étage inférieur (peinture + sol)',V('si_rafr'),'m²',60); }
     if(CK('su_acces')){ const base=rows.filter(r=>!r.grp).reduce((a,r)=>a+r.tot,0); const pv=+(base*0.20).toFixed(2); rows.push({grp:'Contraintes de chantier'}); rows.push({d:'Plus-value accès difficile / hyper-centre (+20 %)',q:1,u:'F',pu:pv,tva:0.1,tot:pv,noWaste:true}); }
     const etuBase=rows.filter(r=>!r.grp && !r.option).reduce((a,r)=>a+r.tot,0);
     const etu=[];
