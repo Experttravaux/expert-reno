@@ -445,7 +445,7 @@
   $('#do')?.addEventListener('click',()=>openCapture('travaux'));
 
   // Génère le devis en PDF natif (texte net, fidèle, jamais de page blanche)
-  function buildDevisPdf(d){
+  function buildDevisPdf(d, c){
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({unit:'mm', format:'a4'});
     const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 15;
@@ -460,14 +460,23 @@
     doc.text('Devis N° '+(d.num||''), W-M, 20, {align:'right'});
     doc.text('Date : '+(d.date||''), W-M, 25, {align:'right'});
     doc.text('Validité : 1 mois', W-M, 30, {align:'right'});
-    doc.setDrawColor(180,137,78); doc.setLineWidth(0.5); doc.line(M, 46, W-M, 46);
+    doc.setDrawColor(180,137,78); doc.setLineWidth(0.5); doc.line(M, 44, W-M, 44);
+    const hasClient = !!(c && (c.prenom || c.nom));
+    if(hasClient){
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(138,106,56);
+      doc.text('ADRESSÉ À', W-M, 51, {align:'right'});
+      doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(26,24,21);
+      doc.text(((c.prenom||'')+' '+(c.nom||'')).trim(), W-M, 57, {align:'right'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(70,64,56);
+      let yy=62; if(c.tel){ doc.text(''+c.tel, W-M, yy, {align:'right'}); yy+=4.5; } if(c.email){ doc.text(''+c.email, W-M, yy, {align:'right'}); }
+    }
     doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(26,24,21);
-    doc.text('DOSSIER : '+(d.dossier||''), M, 54);
+    doc.text('DOSSIER : '+(d.dossier||''), M, 52);
     const body=(d.rows||[]).map(r=> r.grp
-      ? [{content:r.grp, colSpan:5, styles:{fontStyle:'bold', fillColor:[26,24,21], textColor:[207,166,104]}}]
+      ? [{content:r.grp, colSpan:5, styles:{fontStyle:'bold', fillColor:[240,235,227], textColor:[138,106,56]}}]
       : [r.d, (''+r.q).replace('.',','), r.u, fmt(r.pu), fmt(r.tot)]);
     doc.autoTable({
-      startY:58, head:[['Désignation','Qté','U','P.U. HT','Total HT']], body, theme:'grid',
+      startY: hasClient?72:60, head:[['Désignation','Qté','U','P.U. HT','Total HT']], body, theme:'grid',
       styles:{font:'helvetica', fontSize:8.5, cellPadding:1.5, textColor:[40,37,32], lineColor:[225,218,206], lineWidth:0.1},
       headStyles:{fillColor:[26,24,21], textColor:[207,166,104], halign:'left'},
       columnStyles:{1:{halign:'right',cellWidth:16}, 2:{halign:'center',cellWidth:12}, 3:{halign:'right',cellWidth:26}, 4:{halign:'right',cellWidth:28}},
@@ -482,8 +491,32 @@
     doc.setDrawColor(26,24,21); doc.setLineWidth(0.4); doc.line(lx, y, vx, y); y+=7;
     doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(26,24,21);
     doc.text('Total TTC', lx, y); doc.text(fmt(d.ttc), vx, y, {align:'right'}); y+=12;
-    doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(120,115,108);
-    doc.text('Prix indicatifs - évacuation 1 % - TVA 10 %. Devis établi à titre indicatif.', M, y);
+    // Cartouche mentions légales (pied de devis)
+    let cTop = H - 50;
+    if (y > cTop - 4) { doc.addPage(); cTop = 24; }
+    const cL=M, cR=W-M, cH=40, cMid=cL+(cR-cL)*0.62;
+    doc.setDrawColor(180,137,78); doc.setLineWidth(0.3); doc.roundedRect(cL, cTop, cR-cL, cH, 2, 2);
+    doc.setLineWidth(0.2); doc.line(cMid, cTop+2, cMid, cTop+cH-2);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(26,24,21);
+    doc.text('CONDITIONS & MENTIONS LÉGALES', cL+3, cTop+5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.6); doc.setTextColor(70,64,56);
+    const cond=[
+      "Règlement : acompte de 30 % à la commande, solde à la réception des travaux.",
+      "Validité du devis : 1 mois à compter de la date d'émission.",
+      "TVA 10 % (rénovation de logement de plus de 2 ans) ou 20 % selon les travaux.",
+      "Entreprise assurée : responsabilité civile et garantie décennale.",
+      "Prix indicatifs, établis à titre indicatif, sans valeur d'engagement.",
+      "Litige : médiation de la consommation (art. L.612-1 et s. du C. conso.)."
+    ];
+    let ly=cTop+9;
+    cond.forEach(t=>{ const w=doc.splitTextToSize(t, (cMid-cL)-6); doc.text(w, cL+3, ly); ly+=w.length*2.9; });
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(26,24,21);
+    doc.text('BON POUR ACCORD', cMid+3, cTop+5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.6); doc.setTextColor(70,64,56);
+    doc.text('Date : ..............................', cMid+3, cTop+11);
+    doc.text('Précédé de la mention', cMid+3, cTop+16);
+    doc.text('« Bon pour accord » + signature :', cMid+3, cTop+19.5);
+    doc.setDrawColor(205,200,190); doc.setLineWidth(0.2); doc.rect(cMid+3, cTop+22, (cR-cMid)-6, cH-25);
     try{
       const pages=doc.internal.getNumberOfPages();
       for(let p=1;p<=pages;p++){ doc.setPage(p);
@@ -506,7 +539,7 @@
     let pdfB64=null, pdfUri=null;
     try{
       if(window.jspdf && lastDevis && lastDevis.rows){
-        const doc=buildDevisPdf(lastDevis);
+        const doc=buildDevisPdf(lastDevis, {prenom, nom, tel, email});
         pdfUri=doc.output('datauristring');
         pdfB64=(pdfUri.split('base64,')[1])||null;
       }
