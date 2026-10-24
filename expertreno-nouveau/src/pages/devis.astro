@@ -41,6 +41,8 @@
   .card{background:#fff;border:1px solid var(--cream);border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 10px 30px -22px rgba(26,24,21,.4)}
   .lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--brassd);margin:0 0 12px;display:flex;align-items:center;gap:7px}
   .line{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--cream);border-radius:11px;margin-bottom:8px}
+  .optbox{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;color:var(--taupe);cursor:pointer;flex:none;text-transform:uppercase;letter-spacing:.05em}
+  .optbox input{width:15px;height:15px;accent-color:var(--brass);margin:0}
   .line:last-child{margin-bottom:0}
   .line label{flex:1;font-size:14px;cursor:pointer}
   .line input[type=number]{width:78px;border:1px solid var(--cream);border-radius:8px;padding:7px 10px;font-size:14px;font-family:inherit}
@@ -146,12 +148,14 @@
       <div class="line"><label>Plinthes</label><input type="number" id="so_plinthe" value="0" min="0"><span class="unit">ml</span></div>
     </div>
     <div class="card"><div class="lbl">🚿 Sanitaire / plomberie</div>
-      <div class="line"><span class="sw"><input type="checkbox" id="c_cabine"><span class="sl"></span></span><label for="c_cabine">Dépose + repose cabine / receveur</label></div>
-      <div class="line"><span class="sw"><input type="checkbox" id="c_bac"><span class="sl"></span></span><label for="c_bac">Fourniture + pose receveur</label></div>
-      <div class="line"><span class="sw"><input type="checkbox" id="c_meuble"><span class="sl"></span></span><label for="c_meuble">Meuble vasque</label></div>
-      <div class="line"><span class="sw"><input type="checkbox" id="c_wc"><span class="sl"></span></span><label for="c_wc">WC</label></div>
-      <div class="line"><span class="sw"><input type="checkbox" id="c_robinet"><span class="sl"></span></span><label for="c_robinet">Robinetterie / mitigeur</label></div>
-      <div class="line"><span class="sw"><input type="checkbox" id="c_plomberie"><span class="sl"></span></span><label for="c_plomberie">Modification / reprise du réseau de plomberie</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_cabine"><span class="sl"></span></span><label for="c_cabine">Dépose + repose cabine / receveur</label><label class="optbox"><input type="checkbox" id="o_cabine"> option</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_bac"><span class="sl"></span></span><label for="c_bac">Fourniture + pose receveur</label><label class="optbox"><input type="checkbox" id="o_bac"> option</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_paroi"><span class="sl"></span></span><label for="c_paroi">Paroi vitrée de douche</label><label class="optbox"><input type="checkbox" id="o_paroi"> option</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_meuble"><span class="sl"></span></span><label for="c_meuble">Meuble vasque</label><label class="optbox"><input type="checkbox" id="o_meuble"> option</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_mitvasque"><span class="sl"></span></span><label for="c_mitvasque">Mitigeur vasque</label><label class="optbox"><input type="checkbox" id="o_mitvasque"> option</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_mitdouche"><span class="sl"></span></span><label for="c_mitdouche">Mitigeur de douche</label><label class="optbox"><input type="checkbox" id="o_mitdouche"> option</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_wc"><span class="sl"></span></span><label for="c_wc">WC</label><label class="optbox"><input type="checkbox" id="o_wc"> option</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_plomberie"><span class="sl"></span></span><label for="c_plomberie">Modification / reprise du réseau de plomberie</label><label class="optbox"><input type="checkbox" id="o_plomberie"> option</label></div>
     </div>
     <div class="card"><div class="lbl">🔧 Divers</div>
       <div class="line"><span class="sw"><input type="checkbox" id="c_fuite"><span class="sl"></span></span><label for="c_fuite">Recherche de fuite destructive</label></div>
@@ -360,11 +364,12 @@
   // rendu partagé du devis
   function renderDevis(rows, dossier){
     // évacuation déchets 1%
-    let htW=rows.filter(r=>!r.grp && !r.noWaste).reduce((a,r)=>a+r.tot,0);
+    let htW=rows.filter(r=>!r.grp && !r.noWaste && !r.option).reduce((a,r)=>a+r.tot,0);
     rows.push({grp:'Évacuation'}); rows.push({d:'Évacuation et traitement des déchets (1 %)',q:1,u:'F',pu:+(htW*0.01).toFixed(2),tva:0.1,tot:+(htW*0.01).toFixed(2)});
     const F=[]; for(let i=0;i<rows.length;i++){ const r=rows[i]; if(r.grp){ if(rows[i+1]&&!rows[i+1].grp) F.push(r); } else F.push(r); }
     const tb=$('#rows'); tb.innerHTML=''; let ht=0,tva=0;
     F.forEach(r=>{ if(r.grp) tb.insertAdjacentHTML('beforeend',`<tr class="grp"><td colspan="5">${r.grp}</td></tr>`);
+      else if(r.option) tb.insertAdjacentHTML('beforeend',`<tr style="color:#a69d8e"><td>${r.d} <em>(option)</em></td><td class="r">${(''+r.q).replace('.',',')}</td><td>${r.u}</td><td class="r">${euro(r.pu)}</td><td class="r">${euro(r.tot)}</td></tr>`);
       else{ ht+=r.tot; tva+=r.tot*(r.tva||0.1); tb.insertAdjacentHTML('beforeend',`<tr><td>${r.d}</td><td class="r">${(''+r.q).replace('.',',')}</td><td>${r.u}</td><td class="r">${euro(r.pu)}</td><td class="r">${euro(r.tot)}</td></tr>`);} });
     tva=+tva.toFixed(2);
     $('#t_ht').textContent=euro(ht); $('#t_tva').textContent=euro(tva); $('#t_ttc').textContent=euro(ht+tva);
@@ -376,13 +381,13 @@
     const cap=$('#capture'); if(cap) cap.style.display='none';
     go('s3');
   }
-  function mk(){ const rows=[]; return { rows, G:t=>rows.push({grp:t}), L:(d,q,u,pu,tva=0.1)=>{ if(q>0) rows.push({d,q:+(+q).toFixed(2),u,pu:+(+pu).toFixed(2),tva,tot:+(q*pu).toFixed(2)}); } }; }
+  function mk(){ const rows=[]; return { rows, G:t=>rows.push({grp:t}), L:(d,q,u,pu,tva=0.1,opt=false)=>{ if(q>0) rows.push({d,q:+(+q).toFixed(2),u,pu:+(+pu).toFixed(2),tva,tot:+(q*pu).toFixed(2),option:opt}); } }; }
 
   // ===== DÉGÂT DES EAUX =====
   const Peau={ dm_faience:15,dm_placo:15,depose_cuisine:800,depose_parquet:12,depose_cabine:220,
     placo:63,doublage:63,enduit:220,toile:18,peint:22.5,faience:90,
     parquet:55,carrelage_sol:70,souple_sol:48,plinthe:14.80,souscouche:8.80,repose_cuisine:850,
-    repose_cabine:320,receveur:590,meuble:550,wc:450,robinet:180,raccord:220,modif_plomberie:350,fuite:440 };
+    repose_cabine:320,receveur:590,meuble:550,wc:450,mitvasque:180,mitdouche:220,paroi:450,raccord:220,modif_plomberie:350,fuite:440 };
   $('#gen-eau').addEventListener('click',()=>{ const g=GAMME[gamme],P=Peau,{rows,G,L}=mk();
     const dmFai=V('dm_faience'),dmPlaco=V('dm_placo'),plPlaco=V('pl_placo'),plPeint=V('pl_peint');
     const muPlaco=V('mu_placo'),muDoub=V('mu_doublage'),muToile=V('mu_toile'),muPeint=V('mu_peint'),muFai=V('mu_faience');
@@ -404,13 +409,17 @@
       else L('Sol souple (PVC/lino)',soSurf,'m²',P.souple_sol*g); }
     L('Plinthes', soPlin,'ml',P.plinthe*g);
     if(CK('c_depcui')) { G('Cuisine'); L('Repose de la cuisine équipée',1,'F',P.repose_cuisine); }
-    if(CK('c_bac')||CK('c_meuble')||CK('c_wc')||CK('c_robinet')||CK('c_plomberie')||CK('c_cabine')){ G('Sanitaire / Plomberie');
-      if(CK('c_bac')){ L('Fourniture et pose receveur',1,'U',P.receveur*g); L('Raccordement plomberie receveur',1,'F',P.raccord); }
-      if(CK('c_cabine')) L('Repose cabine + mitigeur',1,'U',P.repose_cabine);
-      if(CK('c_meuble')) L('Fourniture et pose meuble vasque',1,'U',P.meuble*g);
-      if(CK('c_wc')) L('Fourniture et pose WC',1,'U',P.wc*g);
-      if(CK('c_robinet')) L('Fourniture et pose robinetterie',1,'U',P.robinet*g);
-      if(CK('c_plomberie')) L('Modification / reprise réseau plomberie',1,'F',P.modif_plomberie); }
+    const sanIds=['c_bac','c_cabine','c_paroi','c_meuble','c_mitvasque','c_mitdouche','c_wc','c_plomberie','o_bac','o_cabine','o_paroi','o_meuble','o_mitvasque','o_mitdouche','o_wc','o_plomberie'];
+    if(sanIds.some(CK)){ G('Sanitaire / Plomberie');
+      const S=(id,d,q,u,pu,tva=0.1)=>{ if(CK('o_'+id)) L(d,q,u,pu,tva,true); else if(CK('c_'+id)) L(d,q,u,pu,tva,false); };
+      if(CK('c_bac')) { L('Fourniture et pose receveur',1,'U',P.receveur*g); L('Raccordement plomberie receveur',1,'F',P.raccord); } else if(CK('o_bac')) L('Fourniture et pose receveur',1,'U',P.receveur*g,0.1,true);
+      S('cabine','Repose cabine + mitigeur',1,'U',P.repose_cabine);
+      S('paroi','Fourniture et pose paroi vitrée de douche',1,'U',P.paroi*g);
+      S('meuble','Fourniture et pose meuble vasque',1,'U',P.meuble*g);
+      S('mitvasque','Fourniture et pose mitigeur vasque',1,'U',P.mitvasque*g);
+      S('mitdouche','Fourniture et pose mitigeur de douche',1,'U',P.mitdouche*g);
+      S('wc','Fourniture et pose WC',1,'U',P.wc*g);
+      S('plomberie','Modification / reprise réseau plomberie',1,'F',P.modif_plomberie); }
     if(CK('c_fuite')){ G('Recherche de fuite'); L('Recherche de fuite destructive',1,'F',P.fuite,0.2); }
     renderDevis(rows,'Reprise suite à un dégât des eaux');
   });
@@ -516,6 +525,9 @@
         if(inSec) body.push([{content:'Sous-total du lot', colSpan:4, styles:subStyle}, {content:fmt(secTotal), styles:subStyle}]);
         body.push([{content:r.grp, colSpan:5, styles:{fontStyle:'bold', fillColor:[240,235,227], textColor:[138,106,56]}}]);
         secTotal=0; inSec=true;
+      } else if(r.option) {
+        const og=[150,143,130];
+        body.push([{content:r.d+' (option)',styles:{textColor:og}}, {content:(''+r.q).replace('.',','),styles:{textColor:og}}, {content:r.u,styles:{textColor:og}}, {content:fmt(r.pu),styles:{textColor:og}}, {content:fmt(r.tot),styles:{textColor:og}}]);
       } else {
         body.push([r.d, (''+r.q).replace('.',','), r.u, fmt(r.pu), fmt(r.tot)]);
         secTotal+=r.tot;
