@@ -472,9 +472,19 @@
     }
     doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(26,24,21);
     doc.text('DOSSIER : '+(d.dossier||''), M, 52);
-    const body=(d.rows||[]).map(r=> r.grp
-      ? [{content:r.grp, colSpan:5, styles:{fontStyle:'bold', fillColor:[240,235,227], textColor:[138,106,56]}}]
-      : [r.d, (''+r.q).replace('.',','), r.u, fmt(r.pu), fmt(r.tot)]);
+    const subStyle={halign:'right', fontStyle:'bold', fillColor:[247,244,239], textColor:[26,24,21]};
+    const body=[]; let secTotal=0, inSec=false;
+    (d.rows||[]).forEach(r=>{
+      if(r.grp){
+        if(inSec) body.push([{content:'Sous-total du lot', colSpan:4, styles:subStyle}, {content:fmt(secTotal), styles:subStyle}]);
+        body.push([{content:r.grp, colSpan:5, styles:{fontStyle:'bold', fillColor:[240,235,227], textColor:[138,106,56]}}]);
+        secTotal=0; inSec=true;
+      } else {
+        body.push([r.d, (''+r.q).replace('.',','), r.u, fmt(r.pu), fmt(r.tot)]);
+        secTotal+=r.tot;
+      }
+    });
+    if(inSec) body.push([{content:'Sous-total du lot', colSpan:4, styles:subStyle}, {content:fmt(secTotal), styles:subStyle}]);
     doc.autoTable({
       startY: hasClient?72:60, head:[['Désignation','Qté','U','P.U. HT','Total HT']], body, theme:'grid',
       styles:{font:'helvetica', fontSize:8.5, cellPadding:1.5, textColor:[40,37,32], lineColor:[225,218,206], lineWidth:0.1},
