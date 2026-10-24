@@ -262,7 +262,7 @@
         <table><thead><tr><th>Désignation</th><th class="r">Qté</th><th>U</th><th class="r">P.U. HT</th><th class="r">Total HT</th></tr></thead><tbody id="rows"></tbody></table>
         <div class="tot"><div><span>Sous-total HT</span><span id="t_ht"></span></div><div><span>TVA</span><span id="t_tva"></span></div><div class="ttc"><span>Total TTC</span><span id="t_ttc"></span></div></div>
       </div>
-      <p class="note">Prix indicatifs · évacuation 1 % · TVA 10 % · base assurance (MAIF) pour les sinistres.</p>
+      <p class="note">Prix indicatifs · évacuation 1 % · TVA 10 %.</p>
       <div class="exits">
         <button class="ex ex2" id="pay">📄 Recevez votre devis officiel</button>
         <button class="ex ex1" id="do">🔨 Faire réaliser par Expert Travaux</button>
@@ -270,11 +270,12 @@
       <p class="note" id="paynote"></p>
     </div>
     <div class="card" id="capture" style="display:none">
-      <div class="lbl" id="cap-title">Vos coordonnées — on vous recontacte</div>
+      <div class="lbl" id="cap-title">Recevez votre devis par email</div>
       <input class="f" id="cap-prenom" placeholder="Prénom *">
       <input class="f" id="cap-nom" placeholder="Nom">
       <input class="f" id="cap-tel" type="tel" placeholder="Téléphone *">
       <input class="f" id="cap-email" type="email" placeholder="Email *">
+      <label style="display:flex;align-items:flex-start;gap:9px;font-size:14px;line-height:1.3;margin:2px 0 12px;cursor:pointer;color:#17150F"><input type="checkbox" id="cap-rappel" style="width:18px;height:18px;margin-top:1px;flex:0 0 auto"> Je souhaite être recontacté(e) sous 24 h par un expert.</label>
       <button class="btn" id="cap-send">Envoyer →</button>
       <p class="note" id="cap-done" style="text-align:left"></p>
     </div>
@@ -436,11 +437,12 @@
     G('Menuiseries'); L('Fourniture et pose fenêtre',V('tv_fen'),'U',P.fen); L('Fourniture et pose porte intérieure',V('tv_porte'),'U',P.porte); if(CK('tv_cuisine')) L('Fourniture et pose cuisine équipée',1,'F',P.cuisine);
     renderDevis(rows,'Devis de travaux ('+travauxBut+')');
   });
-  function openCapture(intent){ capIntent=intent; $('#cap-title').textContent = intent==='assurance' ? 'Recevez votre devis officiel — vos coordonnées' : 'Faites réaliser par Expert Travaux — on vous recontacte'; $('#capture').style.display='block'; $('#capture').scrollIntoView({behavior:'smooth'}); }
+  function openCapture(intent){ capIntent=intent; $('#cap-title').textContent = intent==='assurance' ? 'Recevez votre devis par email — vos coordonnées' : 'Faites réaliser par Expert Travaux — vos coordonnées'; $('#capture').style.display='block'; $('#capture').scrollIntoView({behavior:'smooth'}); }
   $('#pay')?.addEventListener('click',()=>openCapture('assurance'));
   $('#do')?.addEventListener('click',()=>openCapture('travaux'));
   $('#cap-send')?.addEventListener('click',async()=>{
     const prenom=$('#cap-prenom').value.trim(), nom=$('#cap-nom').value.trim(), tel=$('#cap-tel').value.trim(), email=$('#cap-email').value.trim();
+    const rappel=CK('cap-rappel');
     if(!prenom||!tel||!email){ $('#cap-done').textContent='Merci de renseigner prénom, téléphone et email.'; return; }
     if(!supabase){ $('#cap-done').textContent='Service momentanément indisponible — appelez-nous au 07 81 84 41 03.'; return; }
     const btn=$('#cap-send'); btn.disabled=true; btn.textContent='Envoi…';
@@ -448,13 +450,13 @@
       prenom, nom, email, telephone:tel,
       type_projet: lastDevis?lastDevis.dossier:'Demande de devis',
       budget: lastDevis?('≈ '+euro(lastDevis.ttc)+' TTC'):'',
-      message: (capIntent==='assurance'?'DEVIS POUR ASSURANCE':'DEMANDE DE TRAVAUX')+' — '+(lastDevis?lastDevis.dossier:'')+'\n\n'+(lastDevis?lastDevis.resume:''),
+      message: (capIntent==='assurance'?'DEVIS POUR ASSURANCE':'DEMANDE DE TRAVAUX')+' — '+(lastDevis?lastDevis.dossier:'')+'\n\n'+(lastDevis?lastDevis.resume:'')+'\n\n☎ RAPPEL SOUS 24H : '+(rappel?'OUI':'non'),
       source: 'devis-'+capIntent,
-      data: { intent:capIntent, devis:lastDevis },
+      data: { intent:capIntent, devis:lastDevis, rappel24h:rappel },
     });
     btn.disabled=false; btn.textContent='Envoyer →';
     if(error){ $('#cap-done').textContent='Une erreur est survenue. Réessayez ou appelez-nous.'; console.error(error); return; }
-    $('#capture').innerHTML='<div class="lbl">✅ Merci, c\'est envoyé !</div><p class="note" style="text-align:left">Demande bien reçue. Un expert vous recontacte sous 24-48 h.</p>';
+    $('#capture').innerHTML='<div class="lbl">✅ Merci, c\'est envoyé !</div><p class="note" style="text-align:left">Votre devis vient de vous être envoyé par email.'+(rappel?' Vous avez demandé à être recontacté(e) sous 24 h.':'')+'</p>';
   });
 </script>
 </body>
