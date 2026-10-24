@@ -33,6 +33,8 @@
   .pick{display:flex;gap:14px;align-items:flex-start;text-align:left;background:#fff;border:1.5px solid var(--cream);border-radius:16px;padding:16px 18px;cursor:pointer;transition:all .15s;width:100%}
   .pick:hover{border-color:var(--brass);transform:translateY(-1px)}
   .pem{font-size:25px;flex:none;line-height:1.1}
+  .pic{width:46px;height:46px;flex:none;border-radius:50%;background:rgba(180,137,78,.12);display:flex;align-items:center;justify-content:center}
+  .pic svg{width:26px;height:26px;stroke:var(--brassd);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .ptxt{display:flex;flex-direction:column}
   .pt{display:block;font-weight:700;font-size:16px;color:var(--ink)}
   .ps{display:block;font-size:12.5px;color:var(--taupe);margin-top:4px}
@@ -89,14 +91,14 @@
     <h1>J'ai besoin d'un devis</h1>
     <p class="sub">Quel est votre projet ? On s'adapte à votre besoin.</p>
     <div class="cards">
-      <button class="pick" data-go="sinistre"><span class="pem">🛡️</span><span class="ptxt"><span class="pt">J'ai un sinistre</span><span class="ps">[ Dégât des eaux, incendie, tempête — un devis pour l'assurance ]</span></span></button>
-      <button class="pick" data-go="renove"><span class="pem">🔧</span><span class="ptxt"><span class="pt">Je rénove</span><span class="ps">[ Appartement, maison ou une seule pièce ]</span></span></button>
-      <button class="pick" data-go="construis"><span class="pem">🏗️</span><span class="ptxt"><span class="pt">Je construis (neuf)</span><span class="ps">[ Projet neuf, du gros œuvre aux finitions ]</span></span></button>
-      <button class="pick" data-go="sureleve"><span class="pem">🪜</span><span class="ptxt"><span class="pt">Je surélève</span><span class="ps">[ Ajouter un niveau à mon bâtiment ]</span></span></button>
-      <button class="pick" data-go="extension"><span class="pem">➕</span><span class="ptxt"><span class="pt">Je fais une extension</span><span class="ps">[ Agrandir ma surface habitable ]</span></span></button>
-      <button class="pick" data-go="marchand"><span class="pem">🏢</span><span class="ptxt"><span class="pt">Je suis marchand de biens / pro</span><span class="ps">[ Rénovation optimisée coût &amp; délai avant revente ]</span></span></button>
-      <button class="pick" data-go="pret"><span class="pem">🏦</span><span class="ptxt"><span class="pt">J'ai besoin d'un devis pour un prêt</span><span class="ps">[ Détaillé et crédible pour votre banque ]</span></span></button>
-      <button class="pick" data-go="estim"><span class="pem">📊</span><span class="ptxt"><span class="pt">Je veux juste une estimation</span><span class="ps">[ Savoir combien coûtent mes travaux ]</span></span></button>
+      <button class="pick" data-go="sinistre"><span class="pic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3z"/><path d="M12 8.5v3.5"/><path d="M12 15h.01"/></svg></span><span class="ptxt"><span class="pt">J'ai un sinistre</span><span class="ps">[ Dégât des eaux, incendie, tempête — un devis pour l'assurance ]</span></span></button>
+      <button class="pick" data-go="renove"><span class="pic"><svg viewBox="0 0 24 24"><path d="M15 6.5a3.5 3.5 0 0 0-4.6 4.4l-6 6 2.2 2.2 6-6a3.5 3.5 0 0 0 4.4-4.6l-2.1 2.1-1.8-.5-.5-1.8 2.4-1.8z"/></svg></span><span class="ptxt"><span class="pt">Je rénove</span><span class="ps">[ Appartement, maison ou une seule pièce ]</span></span></button>
+      <button class="pick" data-go="construis"><span class="pic"><svg viewBox="0 0 24 24"><path d="M5 21h6"/><path d="M8 21V4"/><path d="M8 4h10"/><path d="M18 4v3"/><path d="M8 7l10 1.3"/><path d="M12 4v3.3"/><rect x="10.6" y="9" width="2.8" height="2.4"/></svg></span><span class="ptxt"><span class="pt">Je construis (neuf)</span><span class="ps">[ Projet neuf, du gros œuvre aux finitions ]</span></span></button>
+      <button class="pick" data-go="sureleve"><span class="pic"><svg viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="10" rx="1"/><path d="M6 16h12"/><path d="M12 3.5v5"/><path d="M9.5 6l2.5-2.5L14.5 6"/></svg></span><span class="ptxt"><span class="pt">Je surélève</span><span class="ps">[ Ajouter un niveau à mon bâtiment ]</span></span></button>
+      <button class="pick" data-go="extension"><span class="pic"><svg viewBox="0 0 24 24"><path d="M3 21V10l6-4.5L15 10v11"/><path d="M2 21h20"/><path d="M15 21v-6h6v6"/><path d="M18 16.5v3M16.5 18h3"/></svg></span><span class="ptxt"><span class="pt">Je fais une extension</span><span class="ps">[ Agrandir ma surface habitable ]</span></span></button>
+      <button class="pick" data-go="marchand"><span class="pic"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="9" height="18" rx="1"/><path d="M14 8h5v13"/><path d="M8 7h1M11 7h1M8 11h1M11 11h1M8 15h1M11 15h1M16.5 12h.5M16.5 16h.5"/><path d="M4 21h17"/></svg></span><span class="ptxt"><span class="pt">Je suis marchand de biens / pro</span><span class="ps">[ Rénovation optimisée coût &amp; délai avant revente ]</span></span></button>
+      <button class="pick" data-go="pret"><span class="pic"><svg viewBox="0 0 24 24"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 21h18"/></svg></span><span class="ptxt"><span class="pt">J'ai besoin d'un devis pour un prêt</span><span class="ps">[ Détaillé et crédible pour votre banque ]</span></span></button>
+      <button class="pick" data-go="estim"><span class="pic"><svg viewBox="0 0 24 24"><path d="M4 4v16h16"/><rect x="7.5" y="13" width="2.5" height="4"/><rect x="12" y="9.5" width="2.5" height="7.5"/><rect x="16.5" y="6.5" width="2.5" height="10.5"/></svg></span><span class="ptxt"><span class="pt">Je veux juste une estimation</span><span class="ps">[ Savoir combien coûtent mes travaux ]</span></span></button>
     </div>
   </div>
 
