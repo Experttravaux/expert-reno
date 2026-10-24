@@ -43,6 +43,7 @@
   .line{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--cream);border-radius:11px;margin-bottom:8px}
   .optbox{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;color:var(--taupe);cursor:pointer;flex:none;text-transform:uppercase;letter-spacing:.05em}
   .optbox input{width:15px;height:15px;accent-color:var(--brass);margin:0}
+  .minisel{font-size:12px;padding:4px 7px;border:1px solid var(--cream);border-radius:8px;color:var(--ink);background:#fff;cursor:pointer}
   .line:last-child{margin-bottom:0}
   .line label{flex:1;font-size:14px;cursor:pointer}
   .line input[type=number]{width:78px;border:1px solid var(--cream);border-radius:8px;padding:7px 10px;font-size:14px;font-family:inherit}
@@ -150,7 +151,7 @@
     <div class="card"><div class="lbl">🚿 Sanitaire / plomberie</div>
       <div class="line"><span class="sw"><input type="checkbox" id="c_cabine"><span class="sl"></span></span><label for="c_cabine">Dépose + repose cabine / receveur</label><label class="optbox"><input type="checkbox" id="o_cabine"> option</label></div>
       <div class="line"><span class="sw"><input type="checkbox" id="c_bac"><span class="sl"></span></span><label for="c_bac">Fourniture + pose receveur</label><label class="optbox"><input type="checkbox" id="o_bac"> option</label></div>
-      <div class="line"><span class="sw"><input type="checkbox" id="c_paroi"><span class="sl"></span></span><label for="c_paroi">Paroi vitrée de douche</label><label class="optbox"><input type="checkbox" id="o_paroi"> option</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="c_paroi"><span class="sl"></span></span><label for="c_paroi">Paroi vitrée de douche</label><select id="paroi_taille" class="minisel"><option value="250">80–120 cm</option><option value="350">120–160 cm</option><option value="500">sur mesure</option></select><label class="optbox"><input type="checkbox" id="o_paroi"> option</label></div>
       <div class="line"><span class="sw"><input type="checkbox" id="c_meuble"><span class="sl"></span></span><label for="c_meuble">Meuble vasque</label><label class="optbox"><input type="checkbox" id="o_meuble"> option</label></div>
       <div class="line"><span class="sw"><input type="checkbox" id="c_mitvasque"><span class="sl"></span></span><label for="c_mitvasque">Mitigeur vasque</label><label class="optbox"><input type="checkbox" id="o_mitvasque"> option</label></div>
       <div class="line"><span class="sw"><input type="checkbox" id="c_mitdouche"><span class="sl"></span></span><label for="c_mitdouche">Mitigeur de douche</label><label class="optbox"><input type="checkbox" id="o_mitdouche"> option</label></div>
@@ -414,7 +415,8 @@
       const S=(id,d,q,u,pu,tva=0.1)=>{ if(CK('o_'+id)) L(d,q,u,pu,tva,true); else if(CK('c_'+id)) L(d,q,u,pu,tva,false); };
       if(CK('c_bac')) { L('Fourniture et pose receveur',1,'U',P.receveur*g); L('Raccordement plomberie receveur',1,'F',P.raccord); } else if(CK('o_bac')) L('Fourniture et pose receveur',1,'U',P.receveur*g,0.1,true);
       S('cabine','Repose cabine + mitigeur',1,'U',P.repose_cabine);
-      S('paroi','Fourniture et pose paroi vitrée de douche',1,'U',P.paroi*g);
+      if(CK('c_paroi')||CK('o_paroi')){ const pf=+(document.getElementById('paroi_taille')?.value||250), po=CK('o_paroi');
+        L('Fourniture paroi vitrée de douche',1,'U',pf,0.1,po); L('Pose paroi vitrée de douche',1,'F',80,0.1,po); }
       S('meuble','Fourniture et pose meuble vasque',1,'U',P.meuble*g);
       S('mitvasque','Fourniture et pose mitigeur vasque',1,'U',P.mitvasque*g);
       S('mitdouche','Fourniture et pose mitigeur de douche',1,'U',P.mitdouche*g);
