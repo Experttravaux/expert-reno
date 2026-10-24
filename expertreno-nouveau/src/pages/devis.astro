@@ -245,6 +245,7 @@
     <div class="card"><div class="lbl">🧱 Gros œuvre / maçonnerie</div>
       <div class="line"><label>Ouverture de mur / création d'ouverture</label><input type="number" id="tv_ouv" value="0" min="0"><span class="unit">u</span></div>
       <div class="line"><label>Dalle / chape béton</label><input type="number" id="tv_dalle" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Façade (enduit / parement)</label><input type="number" id="tv_facade" value="0" min="0"><span class="unit">m²</span></div>
     </div>
     <div class="card"><div class="lbl">🪵 Plâtrerie / isolation</div>
       <div class="line"><label>Cloisons placo</label><input type="number" id="tv_cloison" value="0" min="0"><span class="unit">m²</span></div>
@@ -388,7 +389,7 @@
   const Peau={ dm_faience:15,dm_placo:15,depose_cuisine:800,depose_parquet:12,depose_cabine:220,
     placo:63,doublage:63,enduit:220,toile:18,peint:22.5,faience:90,
     parquet:55,carrelage_sol:70,souple_sol:48,plinthe:14.80,souscouche:8.80,repose_cuisine:850,
-    repose_cabine:320,receveur:590,meuble:550,wc:450,mitvasque:180,mitdouche:220,paroi:450,raccord:220,modif_plomberie:350,fuite:440 };
+    repose_cabine:320,receveur:590,meuble:550,wc:450,mitvasque:80,mitdouche:280,paroi:450,raccord:220,modif_plomberie:350,fuite:440 };
   $('#gen-eau').addEventListener('click',()=>{ const g=GAMME[gamme],P=Peau,{rows,G,L}=mk();
     const dmFai=V('dm_faience'),dmPlaco=V('dm_placo'),plPlaco=V('pl_placo'),plPeint=V('pl_peint');
     const muPlaco=V('mu_placo'),muDoub=V('mu_doublage'),muToile=V('mu_toile'),muPeint=V('mu_peint'),muFai=V('mu_faience');
@@ -418,7 +419,7 @@
       if(CK('c_paroi')||CK('o_paroi')){ const pf=+(document.getElementById('paroi_taille')?.value||250), po=CK('o_paroi');
         L('Fourniture paroi vitrée de douche',1,'U',pf,0.1,po); L('Pose paroi vitrée de douche',1,'F',80,0.1,po); }
       S('meuble','Fourniture et pose meuble vasque',1,'U',P.meuble*g);
-      S('mitvasque','Fourniture et pose mitigeur vasque',1,'U',P.mitvasque*g);
+      S('mitvasque','Fourniture mitigeur vasque (pose incluse au meuble)',1,'U',P.mitvasque*g);
       S('mitdouche','Fourniture et pose mitigeur de douche',1,'U',P.mitdouche*g);
       S('wc','Fourniture et pose WC',1,'U',P.wc*g);
       S('plomberie','Modification / reprise réseau plomberie',1,'F',P.modif_plomberie); }
@@ -469,9 +470,9 @@
   });
 
   function openTravaux(t,s){ $('#g2-title').textContent=t; $('#g2-sub').textContent=s; go('s2g'); }
-  const Ptrav={ ouverture:1500,dalle:80,cloison:55,doublage:63,fauxplaf:55,carr:70,faience:90,parquet:55,peint:22.5,eau:350,chauffe:900,elec:2500,fen:550,porte:350,cuisine:5000 };
+  const Ptrav={ ouverture:1500,dalle:80,facade:80,cloison:55,doublage:63,fauxplaf:55,carr:70,faience:90,parquet:55,peint:22.5,eau:350,chauffe:900,elec:2500,fen:550,porte:350,cuisine:5000 };
   $('#gen-travaux')?.addEventListener('click',()=>{ const P=Ptrav,{rows,G,L}=mk();
-    G('Gros œuvre / Maçonnerie'); L('Ouverture de mur / création d\'ouverture',V('tv_ouv'),'U',P.ouverture); L('Dalle / chape béton',V('tv_dalle'),'m²',P.dalle);
+    G('Gros œuvre / Maçonnerie'); L('Ouverture de mur / création d\'ouverture',V('tv_ouv'),'U',P.ouverture); L('Dalle / chape béton',V('tv_dalle'),'m²',P.dalle); L('Façade (enduit / parement)',V('tv_facade'),'m²',P.facade);
     G('Plâtrerie / Isolation'); L('Cloisons placo',V('tv_cloison'),'m²',P.cloison); L('Doublage isolé',V('tv_doublage'),'m²',P.doublage); L('Faux plafond',V('tv_fauxplaf'),'m²',P.fauxplaf);
     G('Carrelage / Faïence'); L('Carrelage au sol',V('tv_carr'),'m²',P.carr); L('Faïence',V('tv_faience'),'m²',P.faience);
     G('Sols / Peinture'); L('Parquet / sol stratifié',V('tv_parquet'),'m²',P.parquet); L('Peinture (murs + plafonds)',V('tv_peint'),'m²',P.peint);
