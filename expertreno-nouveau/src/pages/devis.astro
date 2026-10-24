@@ -280,6 +280,31 @@
     <button class="btn" id="gen-travaux">Générer mon devis →</button>
   </div>
 
+  <!-- Surélévation (estimateur à ratios) -->
+  <div class="screen" id="s_sur">
+    <h1>Je surélève</h1>
+    <p class="sub">Donnez 4-5 infos — le devis se calcule tout seul par ratios.</p>
+    <div class="card"><div class="lbl">📐 L'essentiel</div>
+      <div class="line"><label>Surface au sol à surélever</label><input type="number" id="su_surf" value="0" min="0"><span class="unit">m²</span></div>
+      <div class="line"><label>Hauteur sous plafond</label><input type="number" id="su_h" value="2.5" min="2" step="0.1"><span class="unit">m</span></div>
+      <div class="line"><label>Nombre de pièces créées</label><input type="number" id="su_pieces" value="1" min="0"><span class="unit">u</span></div>
+    </div>
+    <div class="card"><div class="lbl">🏗️ Structure & toiture</div>
+      <div class="line"><label>Structure des murs</label><select id="su_struct" class="minisel"><option value="220">Ossature bois</option><option value="130">Parpaing / brique</option></select></div>
+      <div class="line"><label>Charpente</label><select id="su_charp" class="minisel"><option value="180">Traditionnelle</option><option value="120">Fermette</option></select></div>
+      <div class="line"><label>Couverture</label><select id="su_couv" class="minisel"><option value="90">Tuile mécanique</option><option value="110">Tuile canal</option><option value="180">Ardoise</option></select></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="su_zing" checked><span class="sl"></span></span><label for="su_zing">Zinguerie (gouttières, noues)</label></div>
+      <div class="line"><label>Fenêtres de toit (Velux)</label><input type="number" id="su_velux" value="0" min="0"><span class="unit">u</span></div>
+    </div>
+    <div class="card"><div class="lbl">🎨 Finitions & technique</div>
+      <div class="line"><label>Revêtement de sol</label><select id="su_sol" class="minisel"><option value="55">Parquet / stratifié</option><option value="70">Carrelage</option></select></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="su_chauf" checked><span class="sl"></span></span><label for="su_chauf">Chauffage (radiateurs électriques)</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="su_acces"><span class="sl"></span></span><label for="su_acces">Accès difficile / hyper-centre (+20 %)</label></div>
+    </div>
+    <div class="card"><div class="lbl">📎 Plan / photos</div><label class="drop">Déposez votre plan ou vos photos<small>l'IA le lira pour ajuster le devis</small><input type="file" hidden multiple></label></div>
+    <button class="btn" id="gen-sur">Générer mon devis →</button>
+  </div>
+
   <!-- S3 devis -->
   <div class="screen" id="s3">
     <div class="card">
@@ -347,7 +372,7 @@
       if(g==='sinistre') go('s1'); else if(g==='eau') go('s2'); else if(g==='feu') go('s2e'); else if(g==='tempete') go('s2t');
       else if(g==='renove'){ travauxBut='rénovation'; openTravaux('Je rénove','Appartement, maison ou une pièce — cochez les lots.'); }
       else if(g==='construis'){ travauxBut='construction neuve'; openTravaux('Je construis (neuf)','Projet neuf — cochez les lots concernés.'); }
-      else if(g==='sureleve'){ travauxBut='surélévation'; openTravaux('Je surélève','Ajout d\'un niveau — cochez les lots.'); }
+      else if(g==='sureleve'){ go('s_sur'); }
       else if(g==='extension'){ travauxBut='extension'; openTravaux('Je fais une extension','Agrandissement — cochez les lots.'); }
       else if(g==='marchand'){ travauxBut='marchand de biens'; openTravaux('Rénovation avant revente','Optimisé coût & délai pour votre opération — cochez les lots.'); }
       else if(g==='pret'){ travauxBut='prêt travaux'; openTravaux('Devis pour un prêt travaux','Détaillé et crédible pour votre banque — cochez les lots.'); }
@@ -489,6 +514,36 @@
     const pieces=[['pc_chambre','Chambre'],['pc_salon','Salon/séjour'],['pc_cuisine','Cuisine'],['pc_sdb','Salle de bain'],['pc_wc','WC'],['pc_couloir','Entrée/couloir'],['pc_bureau','Bureau'],['pc_garage','Garage/cave'],['pc_ext','Extérieur/terrasse']].filter(x=>CK(x[0])).map(x=>x[1]).join(', ');
     renderDevis(rows,'Devis de travaux ('+travauxBut+')'+(pieces?' — Pièces : '+pieces:''));
   });
+
+  // ===== SURÉLÉVATION (estimateur à ratios) =====
+  const selTxt=id=>{ const e=document.getElementById(id); return e&&e.selectedOptions[0]?e.selectedOptions[0].text:''; };
+  $('#gen-sur')?.addEventListener('click',()=>{
+    const S=V('su_surf');
+    if(S<=0){ const b=$('#gen-sur'); b.textContent='Indiquez la surface au sol ↑'; setTimeout(()=>{b.textContent='Générer mon devis →';},1800); return; }
+    const h=V('su_h')||2.5, P=+(4*Math.sqrt(S)).toFixed(1), wall=+(P*h).toFixed(1);
+    const struct=V('su_struct'), charp=V('su_charp'), couv=V('su_couv'), sol=V('su_sol');
+    const {rows,G,L}=mk();
+    G('Structure & élévation');
+    L('Plancher hourdis (sur l\'étage existant)',S,'m²',110);
+    L('Murs — structure ('+selTxt('su_struct')+')',wall,'m²',struct);
+    L('Façade (enduit / parement)',wall,'m²',80);
+    G('Charpente & couverture');
+    L('Charpente ('+selTxt('su_charp')+')',S,'m²',charp);
+    L('Couverture ('+selTxt('su_couv')+')',+(S*1.3).toFixed(1),'m²',couv);
+    if(CK('su_zing')) L('Zinguerie (gouttières, noues)',P,'ml',55);
+    if(V('su_velux')>0) L('Fourniture et pose fenêtre de toit (Velux)',V('su_velux'),'U',750);
+    G('Isolation, cloisons & finitions');
+    L('Isolation + doublage placo (murs)',+(S*3.5).toFixed(1),'m²',63);
+    L('Peinture (murs + plafonds)',+(S*4.5).toFixed(1),'m²',22.5);
+    L('Revêtement de sol ('+selTxt('su_sol')+')',S,'m²',sol);
+    L('Plinthes',+(P*1.3).toFixed(1),'ml',14.80);
+    G('Électricité & chauffage');
+    L('Électricité — création complète',S,'m²',85);
+    if(CK('su_chauf')) L('Chauffage — radiateurs électriques',V('su_pieces')||1,'U',350);
+    if(CK('su_acces')){ const base=rows.filter(r=>!r.grp).reduce((a,r)=>a+r.tot,0); const pv=+(base*0.20).toFixed(2); rows.push({grp:'Contraintes de chantier'}); rows.push({d:'Plus-value accès difficile / hyper-centre (+20 %)',q:1,u:'F',pu:pv,tva:0.1,tot:pv,noWaste:true}); }
+    renderDevis(rows,'Surélévation — '+S+' m² au sol');
+  });
+
   function openCapture(intent){ capIntent=intent; $('#cap-title').textContent = intent==='assurance' ? 'Recevez votre devis par email — vos coordonnées' : 'Faites réaliser par Expert Travaux — vos coordonnées'; $('#capture').style.display='block'; $('#capture').scrollIntoView({behavior:'smooth'}); }
   $('#pay')?.addEventListener('click',()=>openCapture('assurance'));
   $('#do')?.addEventListener('click',()=>openCapture('travaux'));
