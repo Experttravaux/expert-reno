@@ -87,12 +87,16 @@
   <!-- S0 -->
   <div class="screen on" id="s0">
     <h1>J'ai besoin d'un devis</h1>
-    <p class="sub">Pour quoi faire ? On s'adapte à votre besoin.</p>
+    <p class="sub">Quel est votre projet ? On s'adapte à votre besoin.</p>
     <div class="cards">
-      <button class="pick" data-go="sinistre"><span class="pem">🛡️</span><span class="ptxt"><span class="pt">Pour un sinistre / mon assurance</span><span class="ps">[ Dégât des eaux, incendie, tempête… un devis au juste prix ]</span></span></button>
-      <button class="pick" data-go="pret"><span class="pem">🏦</span><span class="ptxt"><span class="pt">Pour un prêt travaux</span><span class="ps">[ Un devis détaillé et crédible pour votre financement ]</span></span></button>
-      <button class="pick" data-go="estim"><span class="pem">📊</span><span class="ptxt"><span class="pt">Pour une estimation</span><span class="ps">[ Savoir combien coûtent vos travaux — rénovation ou neuf ]</span></span></button>
-      <button class="pick" data-go="travaux"><span class="pem">🔨</span><span class="ptxt"><span class="pt">Pour faire réaliser mes travaux</span><span class="ps">[ Passer à l'action avec Expert Travaux ]</span></span></button>
+      <button class="pick" data-go="sinistre"><span class="pem">🛡️</span><span class="ptxt"><span class="pt">J'ai un sinistre</span><span class="ps">[ Dégât des eaux, incendie, tempête — un devis pour l'assurance ]</span></span></button>
+      <button class="pick" data-go="renove"><span class="pem">🔧</span><span class="ptxt"><span class="pt">Je rénove</span><span class="ps">[ Appartement, maison ou une seule pièce ]</span></span></button>
+      <button class="pick" data-go="construis"><span class="pem">🏗️</span><span class="ptxt"><span class="pt">Je construis (neuf)</span><span class="ps">[ Projet neuf, du gros œuvre aux finitions ]</span></span></button>
+      <button class="pick" data-go="sureleve"><span class="pem">🪜</span><span class="ptxt"><span class="pt">Je surélève</span><span class="ps">[ Ajouter un niveau à mon bâtiment ]</span></span></button>
+      <button class="pick" data-go="extension"><span class="pem">➕</span><span class="ptxt"><span class="pt">Je fais une extension</span><span class="ps">[ Agrandir ma surface habitable ]</span></span></button>
+      <button class="pick" data-go="marchand"><span class="pem">🏢</span><span class="ptxt"><span class="pt">Je suis marchand de biens / pro</span><span class="ps">[ Rénovation optimisée coût &amp; délai avant revente ]</span></span></button>
+      <button class="pick" data-go="pret"><span class="pem">🏦</span><span class="ptxt"><span class="pt">J'ai besoin d'un devis pour un prêt</span><span class="ps">[ Détaillé et crédible pour votre banque ]</span></span></button>
+      <button class="pick" data-go="estim"><span class="pem">📊</span><span class="ptxt"><span class="pt">Je veux juste une estimation</span><span class="ps">[ Savoir combien coûtent mes travaux ]</span></span></button>
     </div>
   </div>
 
@@ -322,6 +326,11 @@
     const swx=e.target.closest('.sw'); if(swx){ const cb=swx.querySelector('input[type=checkbox]'); if(cb && e.target!==cb) cb.checked=!cb.checked; return; }
     const p=e.target.closest('.pick'); if(p){ const g=p.dataset.go;
       if(g==='sinistre') go('s1'); else if(g==='eau') go('s2'); else if(g==='feu') go('s2e'); else if(g==='tempete') go('s2t');
+      else if(g==='renove'){ travauxBut='rénovation'; openTravaux('Je rénove','Appartement, maison ou une pièce — cochez les lots.'); }
+      else if(g==='construis'){ travauxBut='construction neuve'; openTravaux('Je construis (neuf)','Projet neuf — cochez les lots concernés.'); }
+      else if(g==='sureleve'){ travauxBut='surélévation'; openTravaux('Je surélève','Ajout d\'un niveau — cochez les lots.'); }
+      else if(g==='extension'){ travauxBut='extension'; openTravaux('Je fais une extension','Agrandissement — cochez les lots.'); }
+      else if(g==='marchand'){ travauxBut='marchand de biens'; openTravaux('Rénovation avant revente','Optimisé coût & délai pour votre opération — cochez les lots.'); }
       else if(g==='pret'){ travauxBut='prêt travaux'; openTravaux('Devis pour un prêt travaux','Détaillé et crédible pour votre banque — cochez les lots.'); }
       else if(g==='estim'){ travauxBut='estimation'; openTravaux('Estimation de votre projet','Cochez les lots concernés, on vous chiffre tout.'); }
       else if(g==='travaux'){ travauxBut='réalisation'; openTravaux('Faire réaliser vos travaux','Cochez les lots, le devis se calcule tout seul.'); }
