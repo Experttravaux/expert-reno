@@ -290,14 +290,18 @@
       <div class="line"><label>Nombre de pièces créées</label><input type="number" id="su_pieces" value="1" min="0"><span class="unit">u</span></div>
     </div>
     <div class="card"><div class="lbl">🏗️ Structure & toiture</div>
+      <div class="line"><label>Plancher à créer</label><select id="su_plancher" class="minisel"><option value="220">Hourdis béton</option><option value="150">Plancher bois</option></select></div>
       <div class="line"><label>Structure des murs</label><select id="su_struct" class="minisel"><option value="220">Ossature bois</option><option value="130">Parpaing / brique</option></select></div>
-      <div class="line"><label>Charpente</label><select id="su_charp" class="minisel"><option value="180">Traditionnelle</option><option value="120">Fermette</option></select></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="su_depose" checked><span class="sl"></span></span><label for="su_depose">Dépose charpente + couverture existante</label></div>
+      <div class="line"><label>Charpente neuve</label><select id="su_charp" class="minisel"><option value="220">Traditionnelle</option><option value="150">Fermette</option></select></div>
       <div class="line"><label>Couverture</label><select id="su_couv" class="minisel"><option value="90">Tuile mécanique</option><option value="110">Tuile canal</option><option value="180">Ardoise</option></select></div>
       <div class="line"><span class="sw"><input type="checkbox" id="su_zing" checked><span class="sl"></span></span><label for="su_zing">Zinguerie (gouttières, noues)</label></div>
       <div class="line"><label>Fenêtres de toit (Velux)</label><input type="number" id="su_velux" value="0" min="0"><span class="unit">u</span></div>
+      <div class="line"><label>Fenêtres en façade</label><input type="number" id="su_fen" value="0" min="0"><span class="unit">u</span></div>
     </div>
     <div class="card"><div class="lbl">🎨 Finitions & technique</div>
       <div class="line"><label>Revêtement de sol</label><select id="su_sol" class="minisel"><option value="55">Parquet / stratifié</option><option value="70">Carrelage</option></select></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="su_escalier" checked><span class="sl"></span></span><label for="su_escalier">Création d'un escalier d'accès</label></div>
       <div class="line"><span class="sw"><input type="checkbox" id="su_chauf" checked><span class="sl"></span></span><label for="su_chauf">Chauffage (radiateurs électriques)</label></div>
       <div class="line"><span class="sw"><input type="checkbox" id="su_acces"><span class="sl"></span></span><label for="su_acces">Accès difficile / hyper-centre (+20 %)</label></div>
     </div>
@@ -523,22 +527,26 @@
     const h=V('su_h')||2.5, P=+(4*Math.sqrt(S)).toFixed(1), wall=+(P*h).toFixed(1);
     const struct=V('su_struct'), charp=V('su_charp'), couv=V('su_couv'), sol=V('su_sol');
     const {rows,G,L}=mk();
+    if(CK('su_depose')){ G('Dépose de l\'existant'); L('Dépose charpente + couverture existante',S,'m²',50); }
     G('Structure & élévation');
-    L('Plancher hourdis (sur l\'étage existant)',S,'m²',110);
+    L('Plancher à créer ('+selTxt('su_plancher')+')',S,'m²',V('su_plancher'));
     L('Murs — structure ('+selTxt('su_struct')+')',wall,'m²',struct);
     L('Façade (enduit / parement)',wall,'m²',80);
+    if(CK('su_escalier')) L('Création d\'un escalier d\'accès',1,'F',5000);
     G('Charpente & couverture');
-    L('Charpente ('+selTxt('su_charp')+')',S,'m²',charp);
+    L('Charpente neuve ('+selTxt('su_charp')+')',S,'m²',charp);
     L('Couverture ('+selTxt('su_couv')+')',+(S*1.3).toFixed(1),'m²',couv);
     if(CK('su_zing')) L('Zinguerie (gouttières, noues)',P,'ml',55);
     if(V('su_velux')>0) L('Fourniture et pose fenêtre de toit (Velux)',V('su_velux'),'U',750);
-    G('Isolation, cloisons & finitions');
+    G('Menuiseries, isolation & finitions');
+    if(V('su_fen')>0) L('Fourniture et pose fenêtre (façade)',V('su_fen'),'U',600);
     L('Isolation + doublage placo (murs)',+(S*3.5).toFixed(1),'m²',63);
     L('Peinture (murs + plafonds)',+(S*4.5).toFixed(1),'m²',22.5);
     L('Revêtement de sol ('+selTxt('su_sol')+')',S,'m²',sol);
     L('Plinthes',+(P*1.3).toFixed(1),'ml',14.80);
     G('Électricité & chauffage');
     L('Électricité — création complète',S,'m²',85);
+    L('Modification / raccordement au tableau existant',1,'F',800);
     if(CK('su_chauf')) L('Chauffage — radiateurs électriques',V('su_pieces')||1,'U',350);
     if(CK('su_acces')){ const base=rows.filter(r=>!r.grp).reduce((a,r)=>a+r.tot,0); const pv=+(base*0.20).toFixed(2); rows.push({grp:'Contraintes de chantier'}); rows.push({d:'Plus-value accès difficile / hyper-centre (+20 %)',q:1,u:'F',pu:pv,tva:0.1,tot:pv,noWaste:true}); }
     renderDevis(rows,'Surélévation — '+S+' m² au sol');
