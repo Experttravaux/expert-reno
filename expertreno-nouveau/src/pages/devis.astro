@@ -305,6 +305,12 @@
       <div class="line"><span class="sw"><input type="checkbox" id="su_chauf" checked><span class="sl"></span></span><label for="su_chauf">Chauffage (radiateurs électriques)</label></div>
       <div class="line"><span class="sw"><input type="checkbox" id="su_acces"><span class="sl"></span></span><label for="su_acces">Accès difficile / hyper-centre (+20 %)</label></div>
     </div>
+    <div class="card"><div class="lbl">📐 Études, plans & maîtrise d'œuvre</div>
+      <div class="line"><span class="sw"><input type="checkbox" id="su_archi"><span class="sl"></span></span><label for="su_archi">Plan d'architecte (avant-projet)</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="su_permis" checked><span class="sl"></span></span><label for="su_permis">Permis de construire (dossier + dépôt)</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="su_exe"><span class="sl"></span></span><label for="su_exe">Plans d'exécution (3 % des travaux)</label></div>
+      <div class="line"><span class="sw"><input type="checkbox" id="su_amo"><span class="sl"></span></span><label for="su_amo">Maîtrise d'œuvre / AMO — suivi &amp; coordination (10 %)</label></div>
+    </div>
     <div class="card"><div class="lbl">📎 Plan / photos</div><label class="drop">Déposez votre plan ou vos photos<small>l'IA le lira pour ajuster le devis</small><input type="file" hidden multiple></label></div>
     <button class="btn" id="gen-sur">Générer mon devis →</button>
   </div>
@@ -549,6 +555,13 @@
     L('Modification / raccordement au tableau existant',1,'F',800);
     if(CK('su_chauf')) L('Chauffage — radiateurs électriques',V('su_pieces')||1,'U',350);
     if(CK('su_acces')){ const base=rows.filter(r=>!r.grp).reduce((a,r)=>a+r.tot,0); const pv=+(base*0.20).toFixed(2); rows.push({grp:'Contraintes de chantier'}); rows.push({d:'Plus-value accès difficile / hyper-centre (+20 %)',q:1,u:'F',pu:pv,tva:0.1,tot:pv,noWaste:true}); }
+    const etuBase=rows.filter(r=>!r.grp && !r.option).reduce((a,r)=>a+r.tot,0);
+    const etu=[];
+    if(CK('su_archi')) etu.push({d:"Plan d'architecte (avant-projet)",q:1,u:'forfait',pu:800,tva:0.1,tot:800,noWaste:true});
+    if(CK('su_permis')) etu.push({d:'Dossier de permis de construire (dépôt inclus)',q:1,u:'forfait',pu:1500,tva:0.1,tot:1500,noWaste:true});
+    if(CK('su_exe')){ const v=+(etuBase*0.03).toFixed(2); etu.push({d:"Plans d'exécution (3 % des travaux)",q:1,u:'forfait',pu:v,tva:0.1,tot:v,noWaste:true}); }
+    if(CK('su_amo')){ const v=+(etuBase*0.10).toFixed(2); etu.push({d:'Maîtrise d’œuvre / AMO — suivi & coordination (10 %)',q:1,u:'forfait',pu:v,tva:0.1,tot:v,noWaste:true}); }
+    if(etu.length){ rows.push({grp:'Études, plans & maîtrise d’œuvre'}); etu.forEach(e=>rows.push(e)); }
     renderDevis(rows,'Surélévation — '+S+' m² au sol');
   });
 
