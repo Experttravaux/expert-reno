@@ -12,6 +12,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Obtenir un devis — Expert Réno</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
 <style>
   :root{--onyx:#1A1815;--brass:#B4894E;--brassd:#8A6A38;--ivory:#F7F4EF;--cream:#ECE7DF;--ink:#17150F;--taupe:#6E685E}
   *{margin:0;padding:0;box-sizing:border-box}
@@ -445,18 +446,36 @@
     const rappel=CK('cap-rappel');
     if(!prenom||!tel||!email){ $('#cap-done').textContent='Merci de renseigner prénom, téléphone et email.'; return; }
     if(!supabase){ $('#cap-done').textContent='Service momentanément indisponible — appelez-nous au 07 81 84 41 03.'; return; }
-    const btn=$('#cap-send'); btn.disabled=true; btn.textContent='Envoi…';
+    const btn=$('#cap-send'); btn.disabled=true; btn.textContent='Génération du devis…';
+    // Génère un PDF fidèle du devis affiché (pour l'email + le téléchargement)
+    let pdfB64=null, pdfUri=null;
+    try{
+      const sheet=document.querySelector('.sheet');
+      if(sheet && window.html2pdf){
+        const opt={margin:[6,6,6,6],filename:'Devis-ExpertReno.pdf',image:{type:'jpeg',quality:0.92},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
+        pdfUri=await window.html2pdf().set(opt).from(sheet).outputPdf('datauristring');
+        pdfB64=(pdfUri.split('base64,')[1])||null;
+      }
+    }catch(e){ console.error('PDF',e); }
+    btn.textContent='Envoi…';
     const { error } = await supabase.from('leads').insert({
       prenom, nom, email, telephone:tel,
       type_projet: lastDevis?lastDevis.dossier:'Demande de devis',
       budget: lastDevis?('≈ '+euro(lastDevis.ttc)+' TTC'):'',
       message: (capIntent==='assurance'?'DEVIS POUR ASSURANCE':'DEMANDE DE TRAVAUX')+' — '+(lastDevis?lastDevis.dossier:'')+'\n\n'+(lastDevis?lastDevis.resume:'')+'\n\n☎ RAPPEL SOUS 24H : '+(rappel?'OUI':'non'),
       source: 'devis-'+capIntent,
-      data: { intent:capIntent, devis:lastDevis, rappel24h:rappel },
+      data: { intent:capIntent, devis:{dossier:lastDevis?.dossier, ht:lastDevis?.ht, ttc:lastDevis?.ttc}, rappel24h:rappel, pdf:pdfB64, pdfname:'Devis-ExpertReno.pdf' },
     });
     btn.disabled=false; btn.textContent='Envoyer →';
     if(error){ $('#cap-done').textContent='Une erreur est survenue. Réessayez ou appelez-nous.'; console.error(error); return; }
-    $('#capture').innerHTML='<div class="lbl">✅ Merci, c\'est envoyé !</div><p class="note" style="text-align:left">Votre devis vient de vous être envoyé par email.'+(rappel?' Vous avez demandé à être recontacté(e) sous 24 h.':'')+'</p>';
+    const dl = pdfUri ? '<a class="btn" href="'+pdfUri+'" download="Devis-ExpertReno.pdf" style="display:block;text-align:center;text-decoration:none;margin-top:12px">📄 Télécharger mon devis (PDF)</a>' : '';
+    $('#capture').innerHTML='<div class="lbl">✅ Merci, c\'est envoyé !</div>'+
+      '<p class="note" style="text-align:left">Votre devis vient de vous être envoyé par email'+(pdfUri?' (PDF joint)':'')+'.'+(rappel?' Vous avez demandé à être recontacté(e) sous 24 h.':'')+'</p>'+
+      dl+
+      '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">'+
+        '<a href="/services" style="flex:1;min-width:140px;text-align:center;padding:13px;border-radius:12px;border:1px solid #B4894E;color:#1A1815;text-decoration:none;font-weight:600">Découvrir nos services</a>'+
+        '<a href="/" style="flex:1;min-width:140px;text-align:center;padding:13px;border-radius:12px;background:#1A1815;color:#fff;text-decoration:none;font-weight:600">Retour au site</a>'+
+      '</div>';
   });
 </script>
 </body>
