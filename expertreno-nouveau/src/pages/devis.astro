@@ -12,7 +12,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Obtenir un devis — Expert Réno</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
 <style>
   :root{--onyx:#1A1815;--brass:#B4894E;--brassd:#8A6A38;--ivory:#F7F4EF;--cream:#ECE7DF;--ink:#17150F;--taupe:#6E685E}
   *{margin:0;padding:0;box-sizing:border-box}
@@ -340,9 +341,10 @@
     tva=+tva.toFixed(2);
     $('#t_ht').textContent=euro(ht); $('#t_tva').textContent=euro(tva); $('#t_ttc').textContent=euro(ht+tva);
     $('#dossierTxt').textContent='DOSSIER : '+dossier;
-    $('#dnum').textContent=new Date().toISOString().slice(0,10).replace(/-/g,''); $('#ddate').textContent=new Date().toLocaleDateString('fr-FR');
+    const _num=new Date().toISOString().slice(0,10).replace(/-/g,''), _date=new Date().toLocaleDateString('fr-FR');
+    $('#dnum').textContent=_num; $('#ddate').textContent=_date;
     const resume=F.filter(r=>!r.grp).map(r=>`- ${r.d} : ${(''+r.q).replace('.',',')} ${r.u} x ${euro(r.pu)} = ${euro(r.tot)}`).join('\n');
-    lastDevis={ dossier, ht:+ht.toFixed(2), ttc:+(ht+tva).toFixed(2), resume };
+    lastDevis={ dossier, ht:+ht.toFixed(2), tva:+tva.toFixed(2), ttc:+(ht+tva).toFixed(2), resume, rows:F, num:_num, date:_date };
     const cap=$('#capture'); if(cap) cap.style.display='none';
     go('s3');
   }
@@ -441,6 +443,59 @@
   function openCapture(intent){ capIntent=intent; $('#cap-title').textContent = intent==='assurance' ? 'Recevez votre devis par email — vos coordonnées' : 'Faites réaliser par Expert Travaux — vos coordonnées'; $('#capture').style.display='block'; $('#capture').scrollIntoView({behavior:'smooth'}); }
   $('#pay')?.addEventListener('click',()=>openCapture('assurance'));
   $('#do')?.addEventListener('click',()=>openCapture('travaux'));
+
+  // Génère le devis en PDF natif (texte net, fidèle, jamais de page blanche)
+  function buildDevisPdf(d){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({unit:'mm', format:'a4'});
+    const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 15;
+    const fmt = n => euro(n).replace(/[  ]/g,' ');
+    doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(26,24,21);
+    doc.text('Expert Travaux', M, 20);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(70,64,56);
+    doc.text('AKHALOUF Youness', M, 26);
+    doc.text('3 pradets des Fraysses - 31810 Clermont le fort', M, 31);
+    doc.text('Tel : 07 81 84 41 03  -  expert.conseil.travaux@gmail.com', M, 36);
+    doc.text('SIRET : 485 082 994 00032', M, 41);
+    doc.text('Devis N° '+(d.num||''), W-M, 20, {align:'right'});
+    doc.text('Date : '+(d.date||''), W-M, 25, {align:'right'});
+    doc.text('Validité : 1 mois', W-M, 30, {align:'right'});
+    doc.setDrawColor(180,137,78); doc.setLineWidth(0.5); doc.line(M, 46, W-M, 46);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(26,24,21);
+    doc.text('DOSSIER : '+(d.dossier||''), M, 54);
+    const body=(d.rows||[]).map(r=> r.grp
+      ? [{content:r.grp, colSpan:5, styles:{fontStyle:'bold', fillColor:[26,24,21], textColor:[207,166,104]}}]
+      : [r.d, (''+r.q).replace('.',','), r.u, fmt(r.pu), fmt(r.tot)]);
+    doc.autoTable({
+      startY:58, head:[['Désignation','Qté','U','P.U. HT','Total HT']], body, theme:'grid',
+      styles:{font:'helvetica', fontSize:8.5, cellPadding:1.5, textColor:[40,37,32], lineColor:[225,218,206], lineWidth:0.1},
+      headStyles:{fillColor:[26,24,21], textColor:[207,166,104], halign:'left'},
+      columnStyles:{1:{halign:'right',cellWidth:16}, 2:{halign:'center',cellWidth:12}, 3:{halign:'right',cellWidth:26}, 4:{halign:'right',cellWidth:28}},
+      margin:{left:M, right:M}
+    });
+    let y=doc.lastAutoTable.finalY+8;
+    if(y>H-45){ doc.addPage(); y=20; }
+    const lx=W-M-70, vx=W-M;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(70,64,56);
+    doc.text('Sous-total HT', lx, y); doc.text(fmt(d.ht), vx, y, {align:'right'}); y+=6;
+    doc.text('TVA (10 %)', lx, y); doc.text(fmt(d.tva), vx, y, {align:'right'}); y+=3;
+    doc.setDrawColor(26,24,21); doc.setLineWidth(0.4); doc.line(lx, y, vx, y); y+=7;
+    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(26,24,21);
+    doc.text('Total TTC', lx, y); doc.text(fmt(d.ttc), vx, y, {align:'right'}); y+=12;
+    doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(120,115,108);
+    doc.text('Prix indicatifs - évacuation 1 % - TVA 10 %. Devis établi à titre indicatif.', M, y);
+    try{
+      const pages=doc.internal.getNumberOfPages();
+      for(let p=1;p<=pages;p++){ doc.setPage(p);
+        doc.saveGraphicsState(); doc.setGState(new doc.GState({opacity:0.10}));
+        doc.setFont('helvetica','bold'); doc.setFontSize(72); doc.setTextColor(180,137,78);
+        doc.text('SPÉCIMEN', W/2, H/2, {align:'center', angle:38});
+        doc.restoreGraphicsState();
+      }
+    }catch(e){}
+    return doc;
+  }
+
   $('#cap-send')?.addEventListener('click',async()=>{
     const prenom=$('#cap-prenom').value.trim(), nom=$('#cap-nom').value.trim(), tel=$('#cap-tel').value.trim(), email=$('#cap-email').value.trim();
     const rappel=CK('cap-rappel');
@@ -450,10 +505,9 @@
     // Génère un PDF fidèle du devis affiché (pour l'email + le téléchargement)
     let pdfB64=null, pdfUri=null;
     try{
-      const sheet=document.querySelector('.sheet');
-      if(sheet && window.html2pdf){
-        const opt={margin:[6,6,6,6],filename:'Devis-ExpertReno.pdf',image:{type:'jpeg',quality:0.92},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
-        pdfUri=await window.html2pdf().set(opt).from(sheet).outputPdf('datauristring');
+      if(window.jspdf && lastDevis && lastDevis.rows){
+        const doc=buildDevisPdf(lastDevis);
+        pdfUri=doc.output('datauristring');
         pdfB64=(pdfUri.split('base64,')[1])||null;
       }
     }catch(e){ console.error('PDF',e); }
